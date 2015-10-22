@@ -12,7 +12,7 @@ setwd(workspace)
 
 if (!exists("cleanCorpus")) source("preprocessing.R")
 
-library(topicmodels, lib = "~/Rpackages")
+library(topicmodels)
 
 # https://github.com/cpsievert/xkcd/tree/master/code
 # https://github.com/cpsievert/xkcd/blob/master/code/03-fitLDA.R 
