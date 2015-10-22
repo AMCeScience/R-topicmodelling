@@ -1,3 +1,4 @@
+workspace <- "~/workspace/R"
 ks <- seq(2, 25, by = 2) # Number of topics
 G <- 200 # Iterations
 alpha <- 0.1

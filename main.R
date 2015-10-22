@@ -1,12 +1,16 @@
 #!/usr/bin/env Rscript
+# https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
+
 # Clear workspace
 #rm(list = ls())
 
+# Load the config
+if (!exists("workspace")) source("config.R")
+
 # Set workspace to folder where articles.csv is placed
-setwd('~/workspace/R')
+setwd(workspace)
 
 if (!exists("cleanCorpus")) source("preprocessing.R")
-if (!exists("ks")) source("config.R")
 
 library(topicmodels)
 
