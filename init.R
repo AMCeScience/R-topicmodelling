@@ -10,4 +10,4 @@
 # Uncomment default repo setting, set with default CRAN repo: http://cran.us.r-project.org
 # https://stackoverflow.com/questions/11488174/how-to-select-a-cran-mirror-in-r
 
-install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAVis", "dplyr"))
+install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr"))
