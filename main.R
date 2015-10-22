@@ -6,6 +6,7 @@
 setwd('~/workspace/R')
 
 if (!exists("cleanCorpus")) source("preprocessing.R")
+if (!exists("ks")) source("config.R")
 
 library(topicmodels)
 
@@ -60,8 +61,7 @@ saveRDS(docLens, "data/docLens.rds")
 # fit a bunch of models -- varying the number of topics
 # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
 # has a nice, concise overview of model selection for LDA
-ks <- seq(2, 25, by = 2)
-models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = 1/k, delta = 0.1, burnin = 100, iter = 100, keep = 50)))
+models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
 saveRDS(models, "data/models.rds")
 
 # Plot the perplexity
