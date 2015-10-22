@@ -12,6 +12,7 @@ setwd(workspace)
 
 if (!exists("cleanCorpus")) source("preprocessing.R")
 
+library(methods)
 library(topicmodels)
 
 # https://github.com/cpsievert/xkcd/tree/master/code
