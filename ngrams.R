@@ -5,7 +5,7 @@ rm(list = ls())
 numberOfGrams <- 1:2
 CSVfileName <- "articles.csv"
 K <- 5 # Number of topics
-G <- 10 # Iterations
+G <- 200 # Iterations
 alpha <- 0.01 # Document to topic distribution, chance that a document belongs to a certain topic
 eta <- 0.01 # Topic to term distribution, chance that a certain term belongs to a topic (eg. topic 1 has a 0.05 chance of containing term X while topic 2 has a 0.0001 chance)
 
@@ -15,16 +15,28 @@ library(lda)
 library(LDAvis)
 library(SnowballC)
 library(quanteda)
+library(stringi)
+library(topicmodels)
+library(dplyr)
+
+# Set workspace to folder where articles.csv is placed
+setwd('~/workspace/R')
 
 # Creates N-grams, counts term occurance, removes terms with low count
-createNGrams <- function(originalText) {
+# Uses tm corpus as input
+createNGrams <- function(originalCorpus) {
+  # Convert back to document list (function uses Corpus as input for interoperability)
+  originalText <- as.list(data.frame(text = unlist(sapply(originalCorpus, `[`, "content")), stringsAsFactors = F))[[1]]
+  
+  originalText <- gsub("-", "", originalText)
+  
   # Create ngrams
   ngram <- dfm(originalText, ngrams = numberOfGrams, verbose = FALSE)
   # Get the term counts
   columnCounts <- colSums(ngram)
   
   # Create list we want to remove
-  sparseTerms <- columnCounts < 2
+  sparseTerms <- columnCounts < 15 | stri_length(names(columnCounts)) <= 6
   # Remove unwanted terms
   cleanedTerms <- columnCounts[!sparseTerms]
   
@@ -34,11 +46,15 @@ createNGrams <- function(originalText) {
   # Store the original text in a variable
   gramReadyText <- originalText
   # For each term (or compound term) check the original text and merge any occurences by adding a _
+  # Stupid paste construction to concat a space to the beginning and end of the search string to avoid merging compound terms
   for(i in 1:length(noDash)) {
-    gramReadyText <- gsub(as.String(noDash[i]), names(cleanedTerms[i]), gramReadyText, ignore.case = TRUE)
+    gramReadyText <- gsub(paste("", paste(as.String(noDash[i]), "", sep = " "), sep = " "), paste("", paste(names(cleanedTerms[i]), "", sep = " "), sep = " "), gramReadyText, ignore.case = TRUE)
   }
   
-  # Returns the the text with _ added to N-gram compound terms
+  # Convert into corpus again
+  gramReadyText <- Corpus(VectorSource(gramReadyText))
+  
+  # Returns the corpus with _ added to N-gram compound terms
   return(gramReadyText)
 }
 
@@ -47,6 +63,8 @@ createNGrams <- function(originalText) {
 stemText <- function(originalCorpus) {
   # Stem the document
   stemmedCorpus <- tm_map(originalCorpus, stemDocument)
+  # Make sure there is no extra whitespace because of processing steps
+  stemmedCorpus <- tm_map(stemmedCorpus, stripWhitespace)
   
   # Fix the stem completion (https://stackoverflow.com/questions/25206049/stemcompletion-is-not-working, answer by cdxsza)
   stemCompletion_mod <- function(stemmedSingleDocument, dict = originalCorpus) {
@@ -81,14 +99,14 @@ cleanMyText <- function(originalText) {
   # Lowercase everything
   originalText <- toLower(originalText)
   
-  # Create compound terms
-  gramReadyText <- createNGrams(originalText)
+  # Convert to corpus
+  originalCorpus <- Corpus(VectorSource(originalText))
   
-  # Convert to corpus for stemming and stop word removal
-  originalCorpus <- Corpus(VectorSource(gramReadyText))
+  # Create compound terms
+  grammedCorpus <- createNGrams(originalCorpus)
   
   # Stem the corpus
-  stemmedCorpus <- stemText(originalCorpus)
+  stemmedCorpus <- stemText(grammedCorpus)
   
   # Remove stopwords and whitespaces
   cleanedCorpus <- removeStopWords(stemmedCorpus)
@@ -97,61 +115,17 @@ cleanMyText <- function(originalText) {
   return(cleanedCorpus)
 }
 
-LDASimulation <- function(corpus) {
-  # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
-  # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
-  LDADocuments <- as.list(data.frame(text = unlist(sapply(corpus, `[`, "content")), stringsAsFactors = F))[[1]]
-  
-  # Get terms by splitting the documents on whitespace
-  usedTerms <- table(unlist(strsplit(LDADocuments, "[[:space:]]+")))
-  
-  # Lexicalize the documents
-  LDADocuments <- lexicalize(LDADocuments, vocab = names(usedTerms))
-  
-  # Get the sum of terms per document
-  tokensPerDoc <- sapply(LDADocuments, function(x) sum(x[2, ]))
-  
-  # Run LDA
-  LDAData <- lda.collapsed.gibbs.sampler(documents = LDADocuments, K = K, vocab = names(usedTerms), num.iterations = G, alpha = alpha, eta = eta, compute.log.likelihood = TRUE)
-  
-  # Return a list of the LDA run, used terms, term frequency, and terms per document
-  return(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc))
-}
-
-visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc) {
-  # Document to topic distribution estimate
-  # Matrix where each column contains the probability distribution over topics for 1 document (1 cell is a probability of topic x for document y)
-  theta <- t(apply(LDAData$document_sums + alpha, 2, function(x) x/sum(x)))
-  # Topic to term distribution estimate
-  # Matrix where each column contains the probability distribution over words for 1 topic (1 cell is a probability of word x for topic y)
-  phi <- t(apply(t(LDAData$topics) + eta, 2, function(x) x/sum(x)))
-  
-  # Put all data into a single list
-  json.raw <- list(phi = phi, theta = theta, doc.length = tokensPerDoc, vocab = usedTerms, term.frequency = termFrequency)
-  
-  # Create JSON format data
-  json.data <- createJSON(phi = json.raw$phi, theta = json.raw$theta, doc.length = json.raw$doc.length, vocab = json.raw$vocab, term.frequency = json.raw$term.frequency)
-  
-  # Remove the directory (throws error otherwise)
-  unlink('vis', recursive = TRUE)
-  
-  # Create browser scripts
-  serVis(json.data, out.dir = 'vis', open.browser = FALSE)
-}
-
-#### TODO: fix the text input
-articles.data <- read.csv(file = CSVfileName, header = FALSE)[1]
-text <- as.matrix(c("In the process message"
-                    , "Sorry i am had to step away for a moment message"
-                    , "i am getting an error page that says QB is currently step unavailable"
-                    , "That link gives me the same error page messages step"))
+# Read the CSV file
+text <- as.matrix(read.csv(file = CSVfileName, header = FALSE)[1]) 
 
 # Start!
-cleanText <- cleanMyText(text)
+cleanCorpus <- cleanMyText(text)
 
-lda <- LDASimulation(cleanText)
+lda <- LDASimulation(cleanCorpus)
+visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
-visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc)
+#lda <- TmLDASimulation(cleanCorpus)
+#visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
 
 
 
