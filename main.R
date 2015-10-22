@@ -4,15 +4,23 @@
 # Clear workspace
 #rm(list = ls())
 
+library(datasets)
+library(stats)
+library(utils)
+library(methods)
+library(grDevices)
+library(graphics)
+
+workspace <- "~/workspace/R"
+
 # Load the config
-if (!exists("workspace")) source("config.R")
+if (!exists("ks")) source("config.R")
 
 # Set workspace to folder where articles.csv is placed
 setwd(workspace)
 
 if (!exists("cleanCorpus")) source("preprocessing.R")
 
-library(methods)
 library(topicmodels)
 
 # https://github.com/cpsievert/xkcd/tree/master/code
