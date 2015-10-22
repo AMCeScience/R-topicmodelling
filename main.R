@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Clear workspace
 #rm(list = ls())
 
