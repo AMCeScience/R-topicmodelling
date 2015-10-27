@@ -79,8 +79,8 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
 
-lda <- LDASimulation(cleanCorpus)
-visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
+#lda <- LDASimulation(cleanCorpus)
+#visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
 #lda <- TmLDASimulation(cleanCorpus)
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")

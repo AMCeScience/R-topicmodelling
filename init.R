@@ -10,4 +10,6 @@
 # Uncomment default repo setting, set with default CRAN repo: http://cran.us.r-project.org
 # https://stackoverflow.com/questions/11488174/how-to-select-a-cran-mirror-in-r
 
+# Install the gsl package for topicmodels to work: sudo apt-get install libgsl0-dev
+
 install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr"))

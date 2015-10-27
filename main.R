@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
 
 # Clear workspace
-#rm(list = ls())
+rm(list = ls())
 
 library(datasets)
 library(stats)
@@ -33,52 +33,47 @@ library(topicmodels)
 #   each fitted model.
 # -----------------------------------------------------------------------
 
-dtm <- DocumentTermMatrix(cleanCorpus)
+#dtm <- DocumentTermMatrix(cleanCorpus)
 
-# If we have a term with zero frequency in the training data, that will
-# pose problems for LDAvis (can't divide by zero!).
-# This function will keep searching for a train/test split that 
-# yields a non-zero frequency for every term in the training data.
-split_dtm <- function(dtm, perc = 0.1) {
-  n <- dtm$nrow
-  idx <- sample(n, size = floor(n * perc))
+source("dtm_handlers.R")
+
+split <- split_corpus(cleanCorpus)
+perps <- data.frame(ks = ks)
+for (i in 1:10) {
+  merge <- merge_corpus(split, i)
   
-  dtm_train <- dtm[-idx, ]
-  dtm_test <- dtm[idx, ]
+  dtm_train <- DocumentTermMatrix(merge$train)
+  dtm_test <- DocumentTermMatrix(merge$test)
   
-  # termFreqs <- colSums(as.matrix(dtm_train))
+  # Make ten subsets of approx 10% of the whole set
+  #dtms <- split_dtm(dtm)
   
-  return(list(dtm_train = dtm_train, dtm_test = dtm_test))
-#   if (any(termFreqs == 0)) {
-#     split_dtm(dtm)
-#   } else {
-#     return(list(dtm_train = dtm_train, dtm_test = dtm_test))
-#   }
+  #dtm_merged <- merge_dtms(dtms, 1)
+  #dtm_merged <- split_dtm_once(dtm)
+  #dtm_train <- dtm_merged$train
+  #dtm_test <- dtm_merged$test
+  
+  # save some summary statistics that we'll need for LDAvis
+  #termFreqs <- colSums(as.matrix(dtm_train))
+  #stopifnot(!any(termFreqs == 0))
+  #saveRDS(termFreqs, "data/termFreqs.rds")
+  
+  #docLens <- rowSums(as.matrix(dtm_train))
+  #stopifnot(!any(docLens == 0))
+  #saveRDS(docLens, "data/docLens.rds")
+  
+  # fit a bunch of models -- varying the number of topics
+  # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
+  # has a nice, concise overview of model selection for LDA
+  models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
+  #saveRDS(models, "data/models.rds")
+  
+  # Plot the perplexity
+  perps[,i + 1] <- sapply(models, perplexity, dtm_test)
+  saveRDS(perps, "data/perplexity_incremental.rds")
+  #png(filename = "data/perplexity.png")
+  #plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
+  #dev.off()
 }
 
-set.seed(43523) # for reproducibility
-dtms <- split_dtm(dtm)
-
-dtm_train <- dtms$dtm_train
-dtm_test <- dtms$dtm_test
-
-# save some summary statistics that we'll need for LDAvis
-termFreqs <- colSums(as.matrix(dtm_train))
-#stopifnot(!any(termFreqs == 0))
-saveRDS(termFreqs, "data/termFreqs.rds")
-
-docLens <- rowSums(as.matrix(dtm_train))
-stopifnot(!any(docLens == 0))
-saveRDS(docLens, "data/docLens.rds")
-
-# fit a bunch of models -- varying the number of topics
-# section 2.4 of http://www.jstatsoft.org/v40/i13/paper
-# has a nice, concise overview of model selection for LDA
-models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
-saveRDS(models, "data/models.rds")
-
-# Plot the perplexity
-perps <- sapply(models, perplexity, dtm_test)
-png(filename = "data/perplexity.png")
-plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
-dev.off()
+saveRDS(perps, "data/perplexity.rds")
