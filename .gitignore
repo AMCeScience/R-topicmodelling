@@ -6,3 +6,8 @@
 .RData
 
 .Rproj.user/
+
+junk.R
+
+lda_vis/
+tm_vis/
