@@ -52,6 +52,7 @@ if (file.exists("data/split_corpus.rds")) {
 }
 
 perps <- data.frame(ks = ks)
+count <- 1
 for (i in is) {
   merge <- merge_corpus(split, i)
   
@@ -82,12 +83,14 @@ for (i in is) {
   #saveRDS(models, "data/models.rds")
   
   # Plot the perplexity
-  perps[,i + 1] <- sapply(models, perplexity, dtm_test)
+  perps[,count] <- sapply(models, perplexity, dtm_test)
   
   saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   #png(filename = "data/perplexity.png")
   #plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
   #dev.off()
+  
+  count <- count + 1
 }
 
 saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))
