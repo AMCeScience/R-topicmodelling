@@ -4,6 +4,12 @@
 # Clear workspace
 rm(list = ls())
 
+options(echo = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
+
+is <- args[1] : args[2]
+
+library(tm)
 library(datasets)
 library(stats)
 library(utils)
