@@ -13,12 +13,13 @@ library(graphics)
 
 workspace <- "~/workspace/R"
 
-# Load the config
-if (!exists("ks")) source("config.R")
-
 # Set workspace to folder where articles.csv is placed
 setwd(workspace)
 
+# Load the config
+if (!exists("ks")) source("config.R")
+
+if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
 if (!exists("cleanCorpus")) source("preprocessing.R")
 
 library(topicmodels)
@@ -37,9 +38,15 @@ library(topicmodels)
 
 source("dtm_handlers.R")
 
-split <- split_corpus(cleanCorpus)
+if (file.exists("data/split_corpus.rds")) {
+  split <- readRDS("data/split_corpus.rds")
+} else {
+  split <- split_corpus(cleanCorpus)
+  saveRDS(split, "data/split_corpus.rds")
+}
+
 perps <- data.frame(ks = ks)
-for (i in 1:10) {
+for (i in is) {
   merge <- merge_corpus(split, i)
   
   dtm_train <- DocumentTermMatrix(merge$train)
@@ -70,10 +77,11 @@ for (i in 1:10) {
   
   # Plot the perplexity
   perps[,i + 1] <- sapply(models, perplexity, dtm_test)
-  saveRDS(perps, "data/perplexity_incremental.rds")
+  
+  saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   #png(filename = "data/perplexity.png")
   #plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
   #dev.off()
 }
 
-saveRDS(perps, "data/perplexity.rds")
+saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))
