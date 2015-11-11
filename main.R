@@ -79,11 +79,19 @@ for (i in is) {
   # fit a bunch of models -- varying the number of topics
   # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
   # has a nice, concise overview of model selection for LDA
-  models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
+  #models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
   #saveRDS(models, "data/models.rds")
   
+  perps[,count] <- sapply(ks, function(k) {
+    train <- LDA(dtm_train, k = k, control = list(alpha = alpha/k, estimate.alpha = FALSE))
+    
+    test <- LDA(dtm_test, model = train, control = list(estimate.beta = FALSE))
+    
+    perplexity(test)
+  })
+  
   # Plot the perplexity
-  perps[,count] <- sapply(models, perplexity, dtm_test)
+  # perps[,count] <- sapply(models, perplexity, dtm_test)
   
   saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   #png(filename = "data/perplexity.png")
