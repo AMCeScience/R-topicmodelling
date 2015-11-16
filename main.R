@@ -16,6 +16,7 @@ library(utils)
 library(methods)
 library(grDevices)
 library(graphics)
+library(Rmpfr)
 
 workspace <- "~/workspace/R"
 
@@ -51,8 +52,11 @@ if (file.exists("data/split_corpus.rds")) {
   saveRDS(split, "data/split_corpus.rds")
 }
 
-perps <- data.frame(ks = ks)
-count <- 1
+harmonicMean <- function(logLikelihoods, precision=2000L) {
+  llMed <- median(logLikelihoods)
+  as.double(llMed - log(mean(exp(-mpfr(logLikelihoods, prec = precision) + llMed))))
+}
+
 for (i in is) {
   merge <- merge_corpus(split, i)
   
@@ -82,23 +86,27 @@ for (i in is) {
   #models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs", control = list(alpha = alpha/k, delta = delta, burnin = G, iter = G, keep = 50)))
   #saveRDS(models, "data/models.rds")
   
-  perps[,count] <- sapply(ks, function(k) {
-    train <- LDA(dtm_train, k = k, control = list(alpha = alpha/k, estimate.alpha = FALSE))
-    
-    test <- LDA(dtm_test, model = train, control = list(estimate.beta = FALSE))
-    
-    perplexity(test)
-  })
+  # Solution: https://stackoverflow.com/questions/21355156/topic-models-cross-validation-with-loglikelihood-or-perplexity
+  
+  all_fitted <- lapply(ks, function(k) { train <- LDA(dtm_train, k = k, method = "Gibbs", control = list(burnin = burnin, iter = iter, keep = keep)) })
+  
+  all_logLiks <- lapply(all_fitted, function(L) L@logLiks[-c(1:(burnin/keep))])
+  
+  all_hm <- sapply(all_logLiks, function(h) harmonicMean(h))
+  
+  plot(ks, all_hm, type = "l")
+  
+  ks[which.max(all_hm)]
   
   # Plot the perplexity
   # perps[,count] <- sapply(models, perplexity, dtm_test)
   
-  saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
+  #saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   #png(filename = "data/perplexity.png")
   #plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
   #dev.off()
   
-  count <- count + 1
+  #count <- count + 1
 }
 
 saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))

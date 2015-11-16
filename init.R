@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# Follow this doc to install the newest R version
+# https://cran.r-project.org/bin/linux/ubuntu/README
+
 # Add R/library folders to user root folder
 
 # Go to /usr/lib/R/etc/Renviron.site
@@ -12,4 +15,6 @@
 
 # Install the gsl package for topicmodels to work: sudo apt-get install libgsl0-dev
 
-install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr"))
+# Run this script, get a cup of tea this might take a while
+
+install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr"))
