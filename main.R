@@ -109,4 +109,4 @@ for (i in is) {
   #count <- count + 1
 }
 
-saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))
+saveRDS(all_hm, gsub("__", i, "data/perplexity__.rds"))

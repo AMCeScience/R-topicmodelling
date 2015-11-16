@@ -13,7 +13,7 @@
 # Uncomment default repo setting, set with default CRAN repo: http://cran.us.r-project.org
 # https://stackoverflow.com/questions/11488174/how-to-select-a-cran-mirror-in-r
 
-# Install the gsl package for topicmodels to work: sudo apt-get install libgsl0-dev
+# Install the following packages for topicmodels to work: apt-get install libgsl0-dev, apt-get install libgmp3-dev, apt-get install libmpfr4, apt-get install libmpfr-dev
 
 # Run this script, get a cup of tea this might take a while
 
