@@ -83,7 +83,7 @@ for (i in is) {
   #saveRDS(models, "data/models.rds")
   
   perps[,count] <- sapply(ks, function(k) {
-    train <- LDA(dtm_train, k = k, control = list(alpha = alpha/k, estimate.alpha = FALSE))
+    train <- LDA(dtm_train, k = k)
     
     test <- LDA(dtm_test, model = train, control = list(estimate.beta = FALSE))
     

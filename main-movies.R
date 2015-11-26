@@ -6,7 +6,7 @@ rm(list = ls())
 library(tm)
 library(topicmodels)
 
-workspace <- "~/workspace/R/movies"
+workspace <- "~/workspace/R"
 
 # Set workspace to folder where articles.csv is placed
 setwd(workspace)
@@ -91,7 +91,8 @@ models <- lapply(ks, function(k) LDA(dtm_train, k, method = "Gibbs",
                                                     burnin = 1000, iter = 1000, 
                                                     keep = 50)))
 save(models, file = "data/models.rda")
-perps <- sapply(models, perplexity, dtm_test)
+perps <- sapply(models, perplexity, dtms$dtm_test)
+save(models, file = "data/perps.rda")
 png(filename = "perplexity.png")
 plot(ks, perps, xlab = "Number of topics", ylab = "Perplexity")
 dev.off()
