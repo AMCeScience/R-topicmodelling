@@ -59,9 +59,9 @@ TmLDASimulation <- function(corpus) {
   
   #tempFrequency <- inspect(dtm)
   #termFrequency <- data.frame(ST = colnames(dtm), Freq = colSums(dtm))
-  termFrequency = colSums(inspect(dtm))
+  termFrequency <- colSums(inspect(dtm))
   
-  return(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta))
+  saveRDS(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/perplexity__.rds"))
 }
 
 visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, theta, outputFolder) {
