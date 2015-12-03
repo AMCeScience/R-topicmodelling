@@ -34,7 +34,7 @@ LDASimulation <- function(corpus) {
   # Matrix where each column contains the probability distribution over words for 1 topic (1 cell is a probability of word x for topic y)
   phi <- t(apply(t(LDAData$topics) + eta, 2, function(x) x/sum(x)))
   
-  saveRDS(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/perplexity__.rds"))
+  saveRDS(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/modelfit__.rds"))
   
   # Return a list of the LDA run, used terms, term frequency, and terms per document
   #return()
@@ -65,14 +65,16 @@ TmLDASimulation <- function(corpus) {
   #termFrequency <- data.frame(ST = colnames(dtm), Freq = colSums(dtm))
   termFrequency <- as.data.frame(inspect(dtm))
   
-  saveRDS(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/perplexity__.rds"))
+  saveRDS(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/modelfit__.rds"))
   
   return(dtm)
 }
 
-visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, theta, outputFolder) {
+visualise <- function(outputFolder) {
+  if (file.exists(gsub("__", K, "data/modelfit__.rds"))) lda <- readRDS(gsub("__", K, "data/modelfit__.rds"))
+  
   # Put all data into a single list
-  json.raw <- list(phi = phi, theta = theta, doc.length = tokensPerDoc, vocab = usedTerms, term.frequency = termFrequency)
+  json.raw <- list(phi = lda$phi, theta = lda$theta, doc.length = lda$tokensPerDoc, vocab = lda$usedTerms, term.frequency = lda$termFrequency)
   
   # Create JSON format data
   json.data <- createJSON(phi = json.raw$phi, theta = json.raw$theta, doc.length = json.raw$doc.length, vocab = json.raw$vocab, term.frequency = json.raw$term.frequency)
@@ -85,7 +87,7 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
 }
 
 #LDASimulation(cleanCorpus)
-visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
+visualise("lda_vis")
 
 #TmLDASimulation(cleanCorpus)
 #saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
