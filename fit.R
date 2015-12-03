@@ -78,9 +78,9 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
 
-LDASimulation(cleanCorpus)
+#LDASimulation(cleanCorpus)
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
-#TmLDASimulation(cleanCorpus)
+TmLDASimulation(cleanCorpus)
 #saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
