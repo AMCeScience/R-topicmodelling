@@ -5,6 +5,10 @@ library(dplyr)
 library(stringi)
 library(tm)
 
+G = 1000
+alpha = 0.01
+eta = 0.01
+
 LDASimulation <- function(corpus) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
@@ -59,9 +63,11 @@ TmLDASimulation <- function(corpus) {
   
   #tempFrequency <- inspect(dtm)
   #termFrequency <- data.frame(ST = colnames(dtm), Freq = colSums(dtm))
-  termFrequency <- colSums(inspect(dtm))
+  termFrequency <- as.data.frame(inspect(dtm))
   
   saveRDS(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/perplexity__.rds"))
+  
+  return(dtm)
 }
 
 visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, theta, outputFolder) {
@@ -78,9 +84,9 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
 
-#LDASimulation(cleanCorpus)
+LDASimulation(cleanCorpus)
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
-TmLDASimulation(cleanCorpus)
+#TmLDASimulation(cleanCorpus)
 #saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
