@@ -9,7 +9,7 @@ G = 1000
 alpha = 0.01
 eta = 0.01
 
-LDASimulation <- function(corpus) {
+LDASimulation <- function(K, corpus) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
   # https://stackoverflow.com/questions/21148049/r-topic-modeling-lda-command-lexicalize-giving-unexpected-results
@@ -70,7 +70,8 @@ TmLDASimulation <- function(corpus) {
   return(dtm)
 }
 
-visualise <- function(outputFolder) {
+visualise <- function(K, outputFolder) {
+  outputFolder <- gsub("__", K, outputFolder)
   if (file.exists(gsub("__", K, "data/modelfit__.rds"))) lda <- readRDS(gsub("__", K, "data/modelfit__.rds"))
   
   # Put all data into a single list
@@ -86,9 +87,12 @@ visualise <- function(outputFolder) {
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
 
-#LDASimulation(cleanCorpus)
-visualise("lda_vis")
+Ks <- c(3, 4, 6, 8, 10)
 
+for (K in Ks) {
+  LDASimulation(K, cleanCorpus)
+  visualise(K, "lda_vis__")
+}
 #TmLDASimulation(cleanCorpus)
 #saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
