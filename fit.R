@@ -1,12 +1,8 @@
-K <- 5 # Number of topics
-G <- 200 # Iterations
-alpha <- 0.01 # Document to topic distribution, chance that a document belongs to a certain topic
-eta <- 0.01 # Topic to term distribution, chance that a certain term belongs to a topic (eg. topic 1 has a 0.05 chance of containing term X while topic 2 has a 0.0001 chance)
-
 library(lda)
 library(LDAvis)
 library(topicmodels)
 library(dplyr)
+library(stringi)
 
 LDASimulation <- function(corpus) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
@@ -40,7 +36,7 @@ LDASimulation <- function(corpus) {
 TmLDASimulation <- function(corpus) {
   dtm <- DocumentTermMatrix(corpus)
   
-  LDAData <- LDA(x = dtm, k = K, method = "Gibbs")
+  LDAData <- LDA(dtm, k = K, method = "Gibbs")
   
   # Solution to translate between topicmodels and LDAVis: http://www.r-bloggers.com/a-link-between-topicmodels-lda-and-ldavis/
   # Document to topic distribution estimate
@@ -82,5 +78,6 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
 #lda <- LDASimulation(cleanCorpus)
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
-#lda <- TmLDASimulation(cleanCorpus)
+lda <- TmLDASimulation(cleanCorpus)
+saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
