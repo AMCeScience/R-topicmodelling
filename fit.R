@@ -30,8 +30,10 @@ LDASimulation <- function(corpus) {
   # Matrix where each column contains the probability distribution over words for 1 topic (1 cell is a probability of word x for topic y)
   phi <- t(apply(t(LDAData$topics) + eta, 2, function(x) x/sum(x)))
   
+  saveRDS(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/perplexity__.rds"))
+  
   # Return a list of the LDA run, used terms, term frequency, and terms per document
-  return(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc, phi = phi, theta = theta))
+  #return()
 }
 
 TmLDASimulation <- function(corpus) {
@@ -76,9 +78,9 @@ visualise <- function(LDAData, usedTerms, termFrequency, tokensPerDoc, phi, thet
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
 
-#lda <- LDASimulation(cleanCorpus)
+LDASimulation(cleanCorpus)
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "lda_vis")
 
-lda <- TmLDASimulation(cleanCorpus)
-saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
+#TmLDASimulation(cleanCorpus)
+#saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
 #visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")
