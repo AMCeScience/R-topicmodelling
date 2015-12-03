@@ -7,7 +7,7 @@ rm(list = ls())
 options(echo = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 
-K <- args[1]
+K <- strtoi(args[1])
 
 workspace <- "~/workspace/R"
 

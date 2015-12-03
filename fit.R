@@ -3,6 +3,7 @@ library(LDAvis)
 library(topicmodels)
 library(dplyr)
 library(stringi)
+library(tm)
 
 LDASimulation <- function(corpus) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
