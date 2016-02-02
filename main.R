@@ -23,7 +23,7 @@ workspace <- "~/workspace/R"
 setwd(workspace)
 
 # Load the config
-if (!exists("ks")) source("config.R")
+if (!exists("configLoaded")) source("config.R")
 
 if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
 if (!exists("cleanCorpus")) source("preprocessing.R")
@@ -40,7 +40,7 @@ library(topicmodels)
 #   each fitted model.
 # -----------------------------------------------------------------------
 
-#dtm <- DocumentTermMatrix(cleanCorpus)
+dtm <- DocumentTermMatrix(cleanCorpus)
 
 source("dtm_handlers.R")
 

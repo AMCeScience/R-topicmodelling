@@ -11,3 +11,12 @@ junk.R
 
 lda_vis/
 tm_vis/
+fits.zip
+Rplot.pdf
+test.pdf
+data/models.rda
+data/perps.zip
+data/perps_harmonic_mean.zip
+data/perps_new.zip
+data/perps_old.zip
+data/split_dtm.rda

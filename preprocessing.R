@@ -1,20 +1,44 @@
-# Variables
-numberOfGrams <- 1:2
-CSVfileName <- "articles.csv"
+if (!exists("configLoaded")) source("config.R")
 
 # Load libraries
 library(tm)
 library(SnowballC)
 library(quanteda)
 library(stringi)
+library(stringr)
+
+###############################
+# TM_MAP compatible functions #
+###############################
+
+# Removes the whitespace from beginning and end of document content
+trimWhitespace <- function(document) {
+  PlainTextDocument(trimws(document$content))
+}
+
+# Stem completes document
+stemComplete <- function(document, dict) {
+  # Fix the stem completion (https://stackoverflow.com/questions/25206049/stemcompletion-is-not-working, answer by cdxsza)
+  PlainTextDocument(stripWhitespace(paste(stemCompletion(unlist(strsplit(as.character(document), " ")), dictionary = dict, type = "prevalent"), sep = "", collapse = " ")))
+}
+
+# Removes dashes between words
+removeDash <- function(document) {
+  PlainTextDocument(str_replace_all(document$content, "-", " "))
+}
+
+# Removes words longer than 26 characters from the string
+removeLong <- function(document) {
+  PlainTextDocument(stripWhitespace(str_replace_all(document$content, "[:alpha:]{26,}", "")))
+}
+
+###############################
 
 # Creates N-grams, counts term occurance, removes terms with low count
 # Uses tm corpus as input
 createNGrams <- function(originalCorpus) {
   # Convert back to document list (function uses Corpus as input for interoperability)
-  originalText <- as.list(data.frame(text = unlist(sapply(originalCorpus, `[`, "content")), stringsAsFactors = F))[[1]]
-  
-  originalText <- gsub("-", "", originalText)
+  originalText <- as.list(data.frame(text = paste("", paste(unlist(sapply(originalCorpus, `[`, "content")), "", sep = " "), sep = " "), stringsAsFactors = F))[[1]]
   
   # Create ngrams
   ngram <- dfm(originalText, ngrams = numberOfGrams, verbose = FALSE)
@@ -40,8 +64,10 @@ createNGrams <- function(originalCorpus) {
   # Convert into corpus again
   gramReadyText <- Corpus(VectorSource(gramReadyText))
   
+  result <- tm_map(gramReadyText, trimWhitespace)
+  
   # Returns the corpus with _ added to N-gram compound terms
-  return(gramReadyText)
+  return(result)
 }
 
 # Stem the text and stem complete the text (with most prevalent term)
@@ -52,33 +78,48 @@ stemText <- function(originalCorpus) {
   # Make sure there is no extra whitespace because of processing steps
   stemmedCorpus <- tm_map(stemmedCorpus, stripWhitespace)
   
-  # Fix the stem completion (https://stackoverflow.com/questions/25206049/stemcompletion-is-not-working, answer by cdxsza)
-  stemCompletion_mod <- function(stemmedSingleDocument, dict = originalCorpus) {
-    PlainTextDocument(stripWhitespace(paste(stemCompletion(unlist(strsplit(as.character(stemmedSingleDocument), " ")), dictionary = dict, type = "prevalent"), sep = "", collapse = " ")))
-  }
-  
   # Apply the stem completion
-  stemCompletedCorpus <- tm_map(stemmedCorpus, stemCompletion_mod)
+  stemCompletedCorpus <- tm_map(stemmedCorpus, stemComplete, originalCorpus)
   
   # Return the corpus
   return(stemCompletedCorpus)
 }
 
-# Remove stopwords and extra whitespaces
+# Remove stopwords
 # Uses tm corpus as input
-removeStopWords <- function(originalCorpus) {
+removeStopWords <- function(originalCorpus, extra) {
   # Remove stopwords
-  result <- tm_map(originalCorpus, removeWords, stopwords("SMART"))
-  # Remove double spaces (side effect of removeWords)
+  result <- tm_map(originalCorpus, removeWords, c(stopwords("SMART"), extra))
+  
   result <- tm_map(result, stripWhitespace)
+  result <- tm_map(result, trimWhitespace)
   
-  # Define whitespace trimmer (start/end of string)
-  trim_mod <- function(x) {
-    PlainTextDocument(trimws(x$content))
-  }
+  return(result)
+}
+
+# Remove words that are weirdly long (e.g. > 30 letters, while max. size in English is approx. 26)
+# Uses tm corpus as input
+removeOverlyLongWords <- function(originalCorpus) {
+  result <- tm_map(originalCorpus, removeLong)
   
-  # Trim string and return
-  return(tm_map(result, trim_mod))
+  result <- tm_map(result, stripWhitespace)
+  result <- tm_map(result, trimWhitespace)
+  
+  return(result)
+}
+
+# Remove special characters and extra whitespace at beginning and end of document
+# Uses tm corpus as input
+removeSpecialCharacters <- function(originalCorpus) {
+  # Remove dash (-), punctuation, and numbers
+  result <- tm_map(originalCorpus, removeDash)
+  result <- tm_map(result, removePunctuation)
+  result <- tm_map(result, removeNumbers)
+  
+  result <- tm_map(result, stripWhitespace)
+  result <- tm_map(result, trimWhitespace)
+  
+  return(result)
 }
 
 cleanMyText <- function(originalText) {
@@ -86,23 +127,32 @@ cleanMyText <- function(originalText) {
   originalText <- toLower(originalText)
   
   # Convert to corpus
-  originalCorpus <- Corpus(VectorSource(originalText))
+  result <- Corpus(VectorSource(originalText))
+  
+  # Remove special characters
+  result <- removeSpecialCharacters(result)
+  
+  # Remove stopwords
+  result <- removeStopWords(result, extraStopWords)
   
   # Create compound terms
-  grammedCorpus <- createNGrams(originalCorpus)
+  result <- createNGrams(result)
   
   # Stem the corpus
-  stemmedCorpus <- stemText(grammedCorpus)
+  result <- stemText(result)
   
-  # Remove stopwords and whitespaces
-  cleanedCorpus <- removeStopWords(stemmedCorpus)
+  # Another round after N-grams
+  result <- removeStopWords(result, extraStopWords)
+  
+  # If any weirdly long words are left, remove them
+  result <- removeOverlyLongWords(result)
   
   # Return as corpus
-  return(cleanedCorpus)
+  return(result)
 }
 
 # Read the CSV file
-text <- as.matrix(read.csv(file = CSVfileName, header = FALSE)[1]) 
+text <- as.matrix(read.csv(file = CSVfileName, header = FALSE)[1])
 
 # Start!
 cleanCorpus <- cleanMyText(text)
@@ -110,6 +160,5 @@ cleanCorpus <- cleanMyText(text)
 # https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
 saveRDS(cleanCorpus, "data/clean_corpus.rds")
 
-rm(CSVfileName)
-rm(numberOfGrams)
-rm(text)
+# Cleanup
+rm(CSVfileName, numberOfGrams, extraStopWords, text)
