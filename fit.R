@@ -1,15 +1,28 @@
+################
+# RETURN VALUE #
+################
+
+# LDAData
+# usedTerms
+# termFrequency
+# tokensPerDoc
+# posterior
+#   phi
+#   theta
+# control
+#   alpha
+#   delta
+#   burnin
+#   iter
+#   keep
+# numberOfTopics
+
 library(lda)
 library(LDAvis)
 library(topicmodels)
-library(dplyr)
-library(stringi)
 library(tm)
 
-G = 1000
-alpha = 0.01
-eta = 0.01
-
-LDASimulation <- function(K, corpus) {
+LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep, store = FALSE) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
   # https://stackoverflow.com/questions/21148049/r-topic-modeling-lda-command-lexicalize-giving-unexpected-results
@@ -24,8 +37,17 @@ LDASimulation <- function(K, corpus) {
   # Get the sum of terms per document
   tokensPerDoc <- sapply(LDADocuments, function(x) sum(x[2, ]))
   
+  control = list(alpha = alpha/K, delta = beta, burnin = burnin, iter = iter)
+  
   # Run LDA
-  LDAData <- lda.collapsed.gibbs.sampler(documents = LDADocuments, K = K, vocab = names(usedTerms), num.iterations = G, alpha = alpha, eta = eta, compute.log.likelihood = TRUE)
+  LDAData <- lda.collapsed.gibbs.sampler(documents = LDADocuments, 
+                                         K = K, 
+                                         vocab = names(usedTerms), 
+                                         num.iterations = control$iter, 
+                                         alpha = control$alpha, 
+                                         eta = control$delta, 
+                                         burnin = control$burnin,
+                                         compute.log.likelihood = TRUE)
   
   # Document to topic distribution estimate
   # Matrix where each column contains the probability distribution over topics for 1 document (1 cell is a probability of topic x for document y)
@@ -34,16 +56,28 @@ LDASimulation <- function(K, corpus) {
   # Matrix where each column contains the probability distribution over words for 1 topic (1 cell is a probability of word x for topic y)
   phi <- t(apply(t(LDAData$topics) + eta, 2, function(x) x/sum(x)))
   
-  saveRDS(list(LDAData = LDAData, usedTerms = names(usedTerms), termFrequency = as.integer(usedTerms), tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/modelfit__.rds"))
+  runData = list(LDAData = LDAData, 
+                 usedTerms = names(usedTerms), 
+                 termFrequency = as.integer(usedTerms), 
+                 tokensPerDoc = tokensPerDoc, 
+                 phi = phi, 
+                 theta = theta, 
+                 control = control, 
+                 numberOfTopics = K)
   
-  # Return a list of the LDA run, used terms, term frequency, and terms per document
-  #return()
+  if (store == TRUE) {
+    saveRDS(runData, gsub("__", Sys.time(), "data/LDA_modelfit__.rds"))
+  }
+  
+  return(runData)
 }
 
-TmLDASimulation <- function(corpus) {
+TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep, store = FALSE) {
   dtm <- DocumentTermMatrix(corpus)
   
-  LDAData <- LDA(dtm, k = K, method = "Gibbs")
+  control = list(alpha = alpha/K, delta = beta, burnin = burnin, iter = iter, keep = keep)
+  
+  LDAData <- LDA(dtm, k = K, method = "Gibbs", control = control)
   
   # Solution to translate between topicmodels and LDAVis: http://www.r-bloggers.com/a-link-between-topicmodels-lda-and-ldavis/
   # Document to topic distribution estimate
@@ -61,24 +95,30 @@ TmLDASimulation <- function(corpus) {
     tokensPerDoc <- c(tokensPerDoc, stri_count(paste(corpus[[i]]$content, collapse = ' '), regex = '\\S+'))
   }
   
-  #tempFrequency <- inspect(dtm)
-  #termFrequency <- data.frame(ST = colnames(dtm), Freq = colSums(dtm))
   termFrequency <- as.data.frame(inspect(dtm))
   
-  saveRDS(list(LDAData = LDAData, usedTerms = usedTerms, termFrequency = termFrequency, tokensPerDoc = tokensPerDoc, phi = phi, theta = theta), gsub("__", K, "data/modelfit__.rds"))
+  runData = list(LDAData = LDAData,
+                 usedTerms = usedTerms,
+                 termFrequency = termFrequency,
+                 tokensPerDoc = tokensPerDoc,
+                 posterior = list(phi = phi, theta = theta),
+                 control = control,
+                 numberOfTopics = K)
   
-  return(dtm)
+  if (store == TRUE) {
+    saveRDS(runData, gsub("__", Sys.time(), "data/TM_LDA_modelfit__.rds"))
+  }
+  
+  return(runData)
 }
 
-visualise <- function(K, outputFolder) {
-  outputFolder <- gsub("__", K, outputFolder)
-  if (file.exists(gsub("__", K, "data/modelfit__.rds"))) lda <- readRDS(gsub("__", K, "data/modelfit__.rds"))
-  
-  # Put all data into a single list
-  json.raw <- list(phi = lda$phi, theta = lda$theta, doc.length = lda$tokensPerDoc, vocab = lda$usedTerms, term.frequency = lda$termFrequency)
-  
+visualise <- function(runData, outputFolder) {
   # Create JSON format data
-  json.data <- createJSON(phi = json.raw$phi, theta = json.raw$theta, doc.length = json.raw$doc.length, vocab = json.raw$vocab, term.frequency = json.raw$term.frequency)
+  json.data <- createJSON(phi = runData$posterior$phi, 
+                          theta = runData$posterior$theta, 
+                          doc.length = runData$tokensPerDoc, 
+                          vocab = runData$usedTerms, 
+                          term.frequency = runData$termFrequency)
   
   # Remove the directory (throws error otherwise)
   unlink(outputFolder, recursive = TRUE)
@@ -86,13 +126,3 @@ visualise <- function(K, outputFolder) {
   # Create browser scripts
   serVis(json.data, out.dir = outputFolder, open.browser = FALSE)
 }
-
-Ks <- c(3, 4, 6, 8, 10)
-
-for (K in Ks) {
-  LDASimulation(K, cleanCorpus)
-  visualise(K, "lda_vis__")
-}
-#TmLDASimulation(cleanCorpus)
-#saveRDS(lda, gsub("__", K, "data/perplexity__.rds"))
-#visualise(lda$LDAData, lda$usedTerms, lda$termFrequency, lda$tokensPerDoc, lda$phi, lda$theta, "tm_vis")

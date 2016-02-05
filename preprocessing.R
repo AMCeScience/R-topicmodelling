@@ -151,14 +151,35 @@ cleanMyText <- function(originalText) {
   return(result)
 }
 
-# Read the CSV file
-text <- as.matrix(read.csv(file = CSVfileName, header = FALSE)[1])
+addIDs <- function(corpus) {
+  for (i in 1:length(corpus)) {
+    corpus[[i]]$meta$id = i
+  }
+  
+  return(corpus)
+}
 
-# Start!
-cleanCorpus <- cleanMyText(text)
+readCSV <- function(name) {
+  text <- as.matrix(read.csv(file = name, header = FALSE)[1])
+  
+  return(text)
+}
 
-# https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
-saveRDS(cleanCorpus, "data/clean_corpus.rds")
+runPreprocessing <- function(csvFileName, store = FALSE) {
+  # Read the CSV file
+  text <- readCSV(csvFileName)
+  
+  # Start!
+  cleanCorpus <- cleanMyText(text)
+  
+  cleanCorpus <- addIDs(cleanCorpus)
+  
+  if (store == TRUE) {
+    # https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
+    saveRDS(cleanCorpus, "data/clean_corpus.rds")
+  }
+  
+  return(cleanCorpus) 
+}
 
-# Cleanup
-rm(CSVfileName, numberOfGrams, extraStopWords, text)
+# testCorpus <- runPreprocessing(CSVfileName)
