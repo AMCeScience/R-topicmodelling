@@ -165,12 +165,14 @@ readCSV <- function(name) {
   return(text)
 }
 
-runPreprocessing <- function(csvFileName, store = FALSE) {
-  # Read the CSV file
-  text <- readCSV(csvFileName)
+runPreprocessing <- function(documents, store = FALSE, CSV = FALSE) {
+  if (CSV) {
+    # Read the CSV file
+    documents <- readCSV(documents)
+  }
   
   # Start!
-  cleanCorpus <- cleanMyText(text)
+  cleanCorpus <- cleanMyText(documents)
   
   cleanCorpus <- addIDs(cleanCorpus)
   
@@ -183,3 +185,6 @@ runPreprocessing <- function(csvFileName, store = FALSE) {
 }
 
 # testCorpus <- runPreprocessing(CSVfileName)
+
+
+
