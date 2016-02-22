@@ -12,7 +12,7 @@ setwd(workspace)
 # Load the config
 if (!exists("configLoaded")) source("config.R")
 
-# if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
+if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
 if (!exists("cleanCorpus")) {
   source("preprocessing.R")
   cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
