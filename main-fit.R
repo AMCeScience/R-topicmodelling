@@ -20,6 +20,7 @@ if (length(args) > 0) {
       
   k = args[2]
   alpha = args[3] 
+  beta = args[4]
 } else {
   print("Taking preset arguments.")
   
@@ -45,14 +46,3 @@ TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
 
 print("Ending run.")
 print(proc.time() - timer)
-
-
-
-
-#source("KL-distance.R")
-
-#res <- KLdistFromRunResults(run1, run2, minimialise = FALSE)
-
-#orderedRes <- KLorder(res)
-
-#source("doc-generator.R")

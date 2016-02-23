@@ -119,6 +119,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation tokensPerDoc done.")
   print(proc.time() - timer)
   
+  # Disabled because of verbosity
   #termFrequency <- as.data.frame(inspect(dtm))
   
   print("TmLDASimulation termFrequency done.")
