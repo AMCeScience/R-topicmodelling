@@ -4,20 +4,44 @@
 # Clear workspace
 rm(list = ls())
 
-workspace <- "~/workspace/R"
+args <- commandArgs(trailingOnly = TRUE)
 
-# Set workspace to folder where articles.csv is placed
-setwd(workspace)
+if (length(args) > 0) {
+  workspace = args[1]
 
-# Load the config
-if (!exists("configLoaded")) source("config.R")
+  setwd(workspace)
+
+  # Load the config
+  if (!exists("configLoaded")) source("config.R")
+      
+  k = args[2]
+  alpha = args[3] 
+} else {
+  workspace <- "~/workspace/R"
+  
+  setwd(workspace)
+  
+  # Load the config
+  if (!exists("configLoaded")) source("config.R")
+}
 
 cleanCorpus <- readRDS("data/clean_corpus.rds")
 
+print("Corpus loaded.")
+
 source("fit.R")
 
-run1 <- TmLDASimulation(cleanCorpus, 4, alpha, beta, iter, iter, keep)
-#run2 <- TmLDASimulation(cleanCorpus, 4, alpha, beta, iter, iter, keep)
+# Start timer
+print("Starting run.")
+timer <- proc.time()
+
+TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
+
+print("Ending run.")
+print(proc.time() - timer)
+
+
+
 
 #source("KL-distance.R")
 

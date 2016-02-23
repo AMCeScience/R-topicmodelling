@@ -1,6 +1,6 @@
 configLoaded <- TRUE
 
-ks <- c(2:10, 25, 50) #Number of topics
+k <- 4 # Number of topics
 iter <- 1500 # Iterations
 burnin <- 1400
 keep <- 50
