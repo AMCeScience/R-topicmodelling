@@ -7,6 +7,8 @@ rm(list = ls())
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) > 0) {
+  print("Taking cli arguments.")
+  
   workspace = args[1]
 
   setwd(workspace)
@@ -17,6 +19,8 @@ if (length(args) > 0) {
   k = args[2]
   alpha = args[3] 
 } else {
+  print("Taking preset arguments.")
+  
   workspace <- "~/workspace/R"
   
   setwd(workspace)
