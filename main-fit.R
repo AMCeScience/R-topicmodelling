@@ -10,7 +10,9 @@ if (length(args) > 0) {
   print("Taking cli arguments.")
   
   workspace = args[1]
-
+  
+  print(paste("Changing to workspace:", workspace))
+  
   setwd(workspace)
 
   # Load the config
