@@ -1,17 +1,28 @@
 #!/usr/bin/env Rscript
 # https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
 
+# Clear workspace
+rm(list = ls())
+
+workspace <- "~/workspace/R"
+
+# Set workspace to folder where articles.csv is placed
+setwd(workspace)
+
+# Load the config
+if (!exists("configLoaded")) source("config.R")
+
 cleanCorpus <- readRDS("data/clean_corpus.rds")
 
 source("fit.R")
 
 run1 <- TmLDASimulation(cleanCorpus, 4, alpha, beta, iter, iter, keep)
-run2 <- TmLDASimulation(cleanCorpus, 4, alpha, beta, iter, iter, keep)
+#run2 <- TmLDASimulation(cleanCorpus, 4, alpha, beta, iter, iter, keep)
 
-source("KL-distance.R")
+#source("KL-distance.R")
 
-res <- KLdistFromRunResults(run1, run2, minimialise = FALSE)
+#res <- KLdistFromRunResults(run1, run2, minimialise = FALSE)
 
-orderedRes <- KLorder(res)
+#orderedRes <- KLorder(res)
 
-source("doc-generator.R")
+#source("doc-generator.R")
