@@ -39,7 +39,7 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   # Get the sum of terms per document
   tokensPerDoc <- sapply(LDADocuments, function(x) sum(x[2, ]))
   
-  control = list(alpha = alpha/K, delta = beta, burnin = burnin, iter = iter)
+  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter)
   
   print("LDASimulation setup done.")
   print(proc.time() - timer)
@@ -87,7 +87,7 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
 TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   dtm <- DocumentTermMatrix(corpus)
   
-  control = list(alpha = alpha/K, delta = beta, burnin = burnin, iter = iter, keep = keep)
+  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep)
   
   print("TmLDASimulation setup done.")
   print(proc.time() - timer)
@@ -132,7 +132,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
                  control = control,
                  numberOfTopics = K)
   
-  saveRDS(runData, gsub("__", Sys.time(), "data/TM_LDA_modelfit__.rds"))
+  saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), "data/TM_LDA_modelfit__.rds"))
    
   print("TmLDASimulation data stored.")
   print(proc.time() - timer)
