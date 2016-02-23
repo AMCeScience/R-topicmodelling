@@ -85,14 +85,14 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
 }
 
 TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
-  dtm <- DocumentTermMatrix(corpus)
+  dtm = DocumentTermMatrix(corpus)
   
   control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep)
   
   print("TmLDASimulation setup done.")
   print(proc.time() - timer)
   
-  LDAData <- LDA(dtm, k = K, method = "Gibbs", control = control)
+  LDAData = LDA(dtm, k = K, method = "Gibbs", control = control)
   
   print("TmLDASimulation run done.")
   print(proc.time() - timer)
@@ -119,14 +119,14 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation tokensPerDoc done.")
   print(proc.time() - timer)
   
-  termFrequency <- as.data.frame(inspect(dtm))
+  #termFrequency <- as.data.frame(inspect(dtm))
   
   print("TmLDASimulation termFrequency done.")
   print(proc.time() - timer)
   
   runData = list(LDAData = LDAData,
                  usedTerms = usedTerms,
-                 termFrequency = termFrequency,
+                 dtm = dtm,
                  tokensPerDoc = tokensPerDoc,
                  posterior = list(phi = phi, theta = theta),
                  control = control,
@@ -137,7 +137,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation data stored.")
   print(proc.time() - timer)
   
-  return(runData)
+  #return(runData)
 }
 
 visualise <- function(runData, outputFolder) {
