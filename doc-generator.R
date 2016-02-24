@@ -35,5 +35,3 @@ evenSpreadTokens <- function() {
   
   return(as.matrix(documents))
 }
-
-# Documents ahve a random spread of tokens
