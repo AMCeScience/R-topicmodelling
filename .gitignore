@@ -9,6 +9,7 @@
 
 junk.R
 
+data/
 lda_vis/
 tm_vis/
 fits.zip

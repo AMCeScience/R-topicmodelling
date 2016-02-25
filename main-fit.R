@@ -21,6 +21,8 @@ if (length(args) > 0) {
   k = args[2]
   alpha = args[3] 
   beta = args[4]
+  
+  cleanCorpus <- readRDS("data/clean_corpus.rds")
 } else {
   print("Taking preset arguments.")
   
@@ -30,9 +32,10 @@ if (length(args) > 0) {
   
   # Load the config
   if (!exists("configLoaded")) source("config.R")
+  
+  source("preprocessing.R")
+  cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE, CSV = TRUE)
 }
-
-cleanCorpus <- readRDS("data/clean_corpus.rds")
 
 print("Corpus loaded.")
 
@@ -42,7 +45,7 @@ source("fit.R")
 print("Starting run.")
 timer <- proc.time()
 
-TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
+data <- TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
 
 print("Ending run.")
 print(proc.time() - timer)

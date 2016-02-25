@@ -119,8 +119,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation tokensPerDoc done.")
   print(proc.time() - timer)
   
-  # Disabled because of verbosity
-  #termFrequency <- as.data.frame(inspect(dtm))
+  termFrequency <- colSums(as.matrix(dtm))
   
   print("TmLDASimulation termFrequency done.")
   print(proc.time() - timer)
@@ -130,6 +129,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
                  dtm = dtm,
                  tokensPerDoc = tokensPerDoc,
                  posterior = list(phi = phi, theta = theta),
+                 termFrequency = termFrequency,
                  control = control,
                  numberOfTopics = K)
   
@@ -138,7 +138,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation data stored.")
   print(proc.time() - timer)
   
-  #return(runData)
+  return(runData)
 }
 
 visualise <- function(runData, outputFolder) {
