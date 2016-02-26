@@ -119,6 +119,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation tokensPerDoc done.")
   print(proc.time() - timer)
   
+  # Memory issue on cloud machine, do this locally
   #termFrequency <- colSums(as.matrix(dtm))
   
   print("TmLDASimulation termFrequency done.")
@@ -129,7 +130,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
                  dtm = dtm,
                  tokensPerDoc = tokensPerDoc,
                  posterior = list(phi = phi, theta = theta),
-                 termFrequency = termFrequency,
+                 #termFrequency = termFrequency,
                  control = control,
                  numberOfTopics = K)
   
