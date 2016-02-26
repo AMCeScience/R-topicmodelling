@@ -9,6 +9,7 @@
 
 junk.R
 
+vis/
 data/
 lda_vis/
 tm_vis/

@@ -119,7 +119,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   print("TmLDASimulation tokensPerDoc done.")
   print(proc.time() - timer)
   
-  termFrequency <- colSums(as.matrix(dtm))
+  #termFrequency <- colSums(as.matrix(dtm))
   
   print("TmLDASimulation termFrequency done.")
   print(proc.time() - timer)
