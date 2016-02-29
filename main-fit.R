@@ -19,8 +19,8 @@ if (length(args) > 0) {
   if (!exists("configLoaded")) source("config.R")
       
   k = args[2]
-  alpha = args[3] 
-  beta = args[4]
+  alpha = 1/as.integer(k)
+  beta = args[3]
   
   cleanCorpus <- readRDS("data/clean_corpus.rds")
 } else {
