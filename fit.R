@@ -88,7 +88,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep, thin, ns
   dtm = DocumentTermMatrix(corpus)
   
   #control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep)
-  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, nstart = nstart, best = TRUE)
+  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, nstart = nstart, best = TRUE, seed = seed)
   
   print("TmLDASimulation setup done.")
   print(proc.time() - timer)
