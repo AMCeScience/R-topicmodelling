@@ -4,8 +4,6 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
                        plot.opts = list(xlab = "PC1", ylab = "PC2"), 
                        reorder.topics = TRUE,
                        ...) {
-  
-  print("starting");
   # Set the values of a few summary statistics of the corpus and model:
   dp <- dim(phi)  # should be K x W
   dt <- dim(theta)  # should be D x K
@@ -125,19 +123,21 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
     data.frame(Term = vocab[idx], Category = category,
                logprob = round(log(phi[indices]), 4),
                loglift = round(log(lift[indices]), 4),
-               relevance = i*log(phi[indices]) + (1 - i)*log(lift[indices]),
+               relevance = round(relevance[indices[,1],], 4),
                stringsAsFactors = FALSE)
   }
   
   #lambda.seq <- seq(0, 1, by=lambda.step)
-  lambda.seq <- lambda
-  if (missing(cluster)) {
-    tinfo <- lapply(as.list(lambda.seq), find_relevance)
-  } else {
-    tinfo <- parallel::parLapply(cluster, as.list(lambda.seq), find_relevance)
-  }
+  #lambda.seq <- lambda
+  #if (missing(cluster)) {
+    #tinfo <- lapply(as.list(lambda.seq), find_relevance)
+    tinfo <- find_relevance(lambda)
+  #} else {
+  #  tinfo <- parallel::parLapply(cluster, as.list(lambda.seq), find_relevance)
+  #}
+    print(tinfo)
+  #tinfo <- unique(do.call("rbind", tinfo))
   
-  tinfo <- unique(do.call("rbind", tinfo))
   tinfo$Total <- term.frequency[match(tinfo$Term, vocab)]
   rownames(term.topic.frequency) <- seq_len(K)
   colnames(term.topic.frequency) <- vocab

@@ -45,7 +45,8 @@ source("fit.R")
 print("Starting run.")
 timer <- proc.time()
 
-data <- TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
+#data <- TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep)
+data <- TmLDASimulation(cleanCorpus, k, alpha, beta, iter, iter, keep, thin, nstart)
 
 print("Ending run.")
 print(proc.time() - timer)
