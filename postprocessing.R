@@ -110,6 +110,73 @@ docsToTopics <- function(id) {
   return(as.matrix(topics(data$LDAData)))
 }
 
+topicSplitMatrix <- function(id1, id2) {
+  getTopicIntersect <- function(model1, model2, topicId) {
+    match <- intersect(model1[model1$Category == topicId & model1[,4 + topicId] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term, model2$Term)
+    
+    # Get only the most relevant?
+    # model1[model1$Category == topicId,]$Term
+    # model1[model1$Category == 1 & model1[,5] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term
+    
+    return(as.integer(model2$Term %in% match) * topicId)
+  }
+  
+  getTopicDifference <- function(model1, model2) {
+    return(as.integer(!model2$Term %in% intersect(model1$Term, model2$Term)) * -1)
+  }
+  
+  getModelIntersect <- function(model1, model2) {
+    loopa <- model1
+    loopb <- model2
+    
+    if(length(unique(model1$Category)) > length(unique(model2$Category))) {
+      loopa <- model2
+      loopb <- model1
+    }
+    
+    container <- seq(from = 0, to = 0, length.out = length(loopb$Term))
+    
+    for(i in 1:length(unique(loopa$Category))) {
+      container <- container + getTopicIntersect(loopa, loopb, i)
+      
+      #container[container > i] = i
+    }
+    
+    container <- container + getTopicDifference(loopa, loopb)
+    
+    return(container)
+  }
+  
+  model1 <- readFileId(id1, TRUE)
+  model2 <- readFileId(id2, TRUE)
+  
+  biggest <- model2
+  smallest <- model1
+  
+  if(length(unique(model1$Category)) > length(unique(model2$Category))) {
+    biggest <- model1
+    smallest <- model2
+  }
+  
+  intersection <- getModelIntersect(smallest, biggest)
+  
+  size <- length(biggest$Term) # number of words
+  topics <- length(unique(biggest$Category)) # number of topics
+  chunkSize <- size/topics
+  
+  # Split intersection into 1 topic per column based on chunkSize
+  splitIntersection <- as.matrix(data.frame(split(intersection, ceiling(seq_along(intersection) / chunkSize))))
+  # Split terms into 1 topic per column based on chunkSize
+  splitTerms <- as.matrix(data.frame(split(biggest$Term, ceiling(seq_along(biggest$Term) / chunkSize))))
+  
+  library(gplots)
+  
+  heatmap.2(x = splitIntersection, cellnote = splitTerms,
+            col = c("burlywood", 0, 2:(length(unique(smallest$Category)) + 1)), breaks = -2:(length(unique(smallest$Category))),
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1,
+            trace = "none", key = TRUE, margins = c(7, 7))
+}
+
 getOverview <- function(ids) {
   ids <- paste(ids, collapse = ",")
   
