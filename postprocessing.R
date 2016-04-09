@@ -13,9 +13,9 @@ readFileId <- function(id, saliencyFile = FALSE) {
 KLdists <- function(ids) {
   source("KL-distance.R")
   
-  ids <- paste(ids, collapse = ",")
+  ids <- paste(ids, collapse = "|")
   
-  files <- list.files("data", paste("[", ids, "]TM_LDA*"))
+  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep = ""))
   
   unorderedContainer <- list()
   container <- list()
@@ -42,6 +42,18 @@ KLdists <- function(ids) {
   return(container)
 }
 
+KLColourMatrix <- function(id1, id2) {
+  source("KL-distance.R")
+  
+  KLData <- as.matrix(KLorder(KLdistFromIds(id1, id2)))
+  
+  library(gplots)
+  
+  heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10),
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1,
+            trace = "none", key = TRUE, margins = c(7, 7))
+}
+
 relevance <- function(ids, numberOfTerms = 30) {
   # Can also get the raw relevancy instead of saliency
   # as.matrix(terms(LDAData, numberOfTerms))
@@ -49,9 +61,9 @@ relevance <- function(ids, numberOfTerms = 30) {
   source("relevance.R")
   timer <- proc.time()
   
-  ids <- paste(ids, collapse = ",")
-  
-  files <- list.files("data", paste("[", ids, "]TM_LDA*"))
+  ids <- paste(ids, collapse = "|")
+  print(ids)
+  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep = ""))
   
   for (i in 1:length(files)) {
     print("Reading file.")
@@ -112,11 +124,11 @@ docsToTopics <- function(id) {
 
 topicSplitMatrix <- function(id1, id2) {
   getTopicIntersect <- function(model1, model2, topicId) {
-    match <- intersect(model1[model1$Category == topicId & model1[,4 + topicId] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term, model2$Term)
+    match <- intersect(model1[model1$Category == topicId,]$Term, model2$Term)
     
     # Get only the most relevant?
     # model1[model1$Category == topicId,]$Term
-    # model1[model1$Category == 1 & model1[,5] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term
+    # model1[model1$Category == 1 & model1[,4 + topicId] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term
     
     return(as.integer(model2$Term %in% match) * topicId)
   }
@@ -139,8 +151,11 @@ topicSplitMatrix <- function(id1, id2) {
     for(i in 1:length(unique(loopa$Category))) {
       container <- container + getTopicIntersect(loopa, loopb, i)
       
-      #container[container > i] = i
+      # Give shared items a different colour
+      container[container > i] = length(unique(loopa$Category)) + 1
     }
+    
+    #container <- as.integer(loopb$Term %in% intersect(loopa$Term, loopb$Term)) * loopa$Category
     
     container <- container + getTopicDifference(loopa, loopb)
     
@@ -172,15 +187,15 @@ topicSplitMatrix <- function(id1, id2) {
   library(gplots)
   
   heatmap.2(x = splitIntersection, cellnote = splitTerms,
-            col = c("burlywood", 0, 2:(length(unique(smallest$Category)) + 1)), breaks = -2:(length(unique(smallest$Category))),
+            col = c("burlywood", 0, 2:(length(unique(smallest$Category)) + 2)), breaks = -2:(length(unique(smallest$Category)) + 1),
             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1,
             trace = "none", key = TRUE, margins = c(7, 7))
 }
 
 getOverview <- function(ids) {
-  ids <- paste(ids, collapse = ",")
+  ids <- paste(ids, collapse = "|")
   
-  files <- list.files("data", paste("[", ids, "]TM_LDA*"))
+  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep=""))
   
   print("############################################")
   print(paste("# Printing overview of ids: ", paste(ids, collapse = ",")))

@@ -43,6 +43,15 @@ KLdistFromRunResults <- function(run1, run2, minimialise = FALSE) {
   return(KLdistList)
 }
 
+KLdistFromIds <- function(id1, id2) {
+  source("postprocessing.R")
+  
+  run1 <- readFileId(id1)
+  run2 <- readFileId(id2)
+  
+  return(KLdistFromRunResults(run1, run2))
+}
+
 KLorder <- function(set) {
   # Start with the full set as subset
   subset <- set
