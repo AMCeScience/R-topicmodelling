@@ -6,10 +6,9 @@ rm(list = ls())
 
 args <- commandArgs(trailingOnly = TRUE)
 
-corpus_name = args[1]
-csv_name = args[2]
-
-workspace <- "~/workspace/R"
+workspace = args[1]
+corpus_name = args[2]
+csv_name = args[3]
 
 # Set workspace to folder where articles.csv is placed
 setwd(workspace)
