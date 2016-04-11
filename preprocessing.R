@@ -165,12 +165,7 @@ readCSV <- function(name) {
   return(text)
 }
 
-runPreprocessing <- function(documents, store = FALSE, CSV = FALSE) {
-  if (CSV) {
-    # Read the CSV file
-    documents <- readCSV(documents)
-  }
-  
+runPreprocessing <- function(documents, store = FALSE, name = "clean_corpus.rds") {
   # Start!
   cleanCorpus <- cleanMyText(documents)
   
@@ -178,7 +173,7 @@ runPreprocessing <- function(documents, store = FALSE, CSV = FALSE) {
   
   if (store == TRUE) {
     # https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
-    saveRDS(cleanCorpus, "data/clean_corpus.rds")
+    saveRDS(cleanCorpus, paste("data", name, sep = "/"))
   }
   
   return(cleanCorpus) 

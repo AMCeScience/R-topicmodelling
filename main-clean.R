@@ -4,6 +4,11 @@
 # Clear workspace
 rm(list = ls())
 
+args <- commandArgs(trailingOnly = TRUE)
+
+corpus_name = args[1]
+csv_name = args[2]
+
 workspace <- "~/workspace/R"
 
 # Set workspace to folder where articles.csv is placed
@@ -12,8 +17,8 @@ setwd(workspace)
 # Load the config
 if (!exists("configLoaded")) source("config.R")
 
-if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
+if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) {
   source("preprocessing.R")
-  cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
+  cleanCorpus <- runPreprocessing(csv_name, store = TRUE)
 }

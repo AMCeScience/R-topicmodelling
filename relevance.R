@@ -32,7 +32,7 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   phi.test <- all.equal(rowSums(phi), rep(1, K), check.attributes = FALSE)
   theta.test <- all.equal(rowSums(theta), rep(1, dt[1]), 
                           check.attributes = FALSE)
-  if (!isTRUE(phi.test)) stop("Rows of phi don't all sum to 1.")
+  # if (!isTRUE(phi.test)) stop("Rows of phi don't all sum to 1.")
   if (!isTRUE(theta.test)) stop("Rows of theta don't all sum to 1.")
   
   # compute counts of tokens across K topics (length-K vector):
@@ -135,7 +135,7 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   #} else {
   #  tinfo <- parallel::parLapply(cluster, as.list(lambda.seq), find_relevance)
   #}
-    print(tinfo)
+    #print(tinfo)
   #tinfo <- unique(do.call("rbind", tinfo))
   
   tinfo$Total <- term.frequency[match(tinfo$Term, vocab)]

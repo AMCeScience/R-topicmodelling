@@ -1,41 +1,33 @@
-readFileId <- function(id, saliencyFile = FALSE) {
+readFileId <- function(id, saliencyFile = FALSE, folder = "data") {
   patt = "TM_LDA*"
   
   if(saliencyFile == TRUE) {
     patt = "saliency_terms*"
   }
   
-  file <- list.files("data", paste(id, patt, sep = ""))
+  file <- list.files(folder, paste(id, patt, sep = ""))
   
-  return(readRDS(paste("data", file, sep = "/")))
+  return(readRDS(paste(folder, file, sep = "/")))
 }
 
 KLdists <- function(ids) {
   source("KL-distance.R")
   
-  ids <- paste(ids, collapse = "|")
-  
-  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep = ""))
-  
-  unorderedContainer <- list()
   container <- list()
   
-  for (i in 1:length(files)) {
-    file1 <- readRDS(paste("data", files[i], sep = "/"))
+  for (i in 1:length(ids)) {
+    file1 <- readFileId(ids[i])
     
     orderedRes <- list()
-    unorderedRes <- list()
     
-    for (j in i:length(files)) {
-      file2 <- readRDS(paste("data", files[j], sep = "/"))
+    for (j in i:length(ids)) {
+      file2 <- readFileId(ids[j])
       
       res <- KLdistFromRunResults(file1, file2, minimialise = FALSE)
       
-      unorderedRes[[j]] <- res
       orderedRes[[j]] <- KLorder(res)
     }
     
-    #unorderedContainer[[i]] <- unorderedRes
     container[[i]] <- orderedRes
   }
   
@@ -61,32 +53,32 @@ relevance <- function(ids, numberOfTerms = 30) {
   source("relevance.R")
   timer <- proc.time()
   
-  ids <- paste(ids, collapse = "|")
   print(ids)
-  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep = ""))
   
-  for (i in 1:length(files)) {
+  for (i in 1:length(ids)) {
     print("Reading file.")
     print(proc.time() - timer)
     
-    data <- readRDS(paste("data", files[i], sep = "/"))
-    id <- substr(files[i], 1, 1)
+    id <- ids[i]
+    data <- readFileId(id)
     
-    if(is.null(data$termFrequency)) {
-      print("Calculating term frequencies.")
-      print(proc.time() - timer)
-      
-      # Term frequency gave memory issues on cloud machine, calculate it here
-      data$termFrequency = colSums(as.matrix(data$dtm))
-      
-      saveRDS(data, paste("data", files[i], sep = "/"))
-    }
+    # Remove a bunch of sparse terms
+    sparseMatrix = removeSparseTerms(data$dtm, sparse = 0.99)
+    
+    print("Calculating term frequencies.")
+    print(proc.time() - timer)
+    
+    # Term frequency gave memory issues on cloud machine, calculate it here
+    data$termFrequency = colSums(as.matrix(sparseMatrix))
+    
+    usedTerms = colnames(sparseMatrix)
+    phi = data$posterior$phi[][, colnames(data$posterior$phi) %in% colnames(sparseMatrix)]
     
     print("Calculating relevances.")
     print(proc.time() - timer)
     
-    termSaliencyData <- salientTerms(phi = data$posterior$phi, theta = data$posterior$theta, 
-                                     vocab = data$usedTerms, doc.length = data$tokensPerDoc, 
+    termSaliencyData <- salientTerms(phi = phi, theta = data$posterior$theta, 
+                                     vocab = usedTerms, doc.length = data$tokensPerDoc, 
                                      term.frequency = data$termFrequency, R = numberOfTerms)
     
     print("Storing data.")
@@ -97,9 +89,7 @@ relevance <- function(ids, numberOfTerms = 30) {
 }
 
 calcImpression <- function(id) {
-  file <- list.files("data", paste(id, "saliency_terms*", sep = ""))
-  
-  data <- readRDS(paste("data", file, sep = "/"))
+  data <- readFileId(id, saliencyFile = TRUE)
   
   size <- length(data[,1]) # number of words
   topics <- max(data[,2]) # number of topics
@@ -114,21 +104,17 @@ calcImpression <- function(id) {
   return(impression)
 }
 
-docsToTopics <- function(id) {
-  file <- list.files("data", paste(id, "saliency_terms*", sep = ""))
-  
-  data <- readRDS(paste("data", file, sep = "/"))
-  
-  return(as.matrix(topics(data$LDAData)))
-}
+# docsToTopics <- function(id) {
+#   file <- list.files("data", paste(id, "saliency_terms*", sep = ""))
+#   
+#   data <- readRDS(paste("data", file, sep = "/"))
+#   
+#   return(as.matrix(topics(data$LDAData)))
+# }
 
 topicSplitMatrix <- function(id1, id2) {
   getTopicIntersect <- function(model1, model2, topicId) {
     match <- intersect(model1[model1$Category == topicId,]$Term, model2$Term)
-    
-    # Get only the most relevant?
-    # model1[model1$Category == topicId,]$Term
-    # model1[model1$Category == 1 & model1[,4 + topicId] == apply(model1[grep("relevance*", names(model1))], 1, max),]$Term
     
     return(as.integer(model2$Term %in% match) * topicId)
   }
@@ -154,8 +140,6 @@ topicSplitMatrix <- function(id1, id2) {
       # Give shared items a different colour
       container[container > i] = length(unique(loopa$Category)) + 1
     }
-    
-    #container <- as.integer(loopb$Term %in% intersect(loopa$Term, loopb$Term)) * loopa$Category
     
     container <- container + getTopicDifference(loopa, loopb)
     
@@ -193,24 +177,15 @@ topicSplitMatrix <- function(id1, id2) {
 }
 
 getOverview <- function(ids) {
-  ids <- paste(ids, collapse = "|")
-  
-  files <- list.files("data", paste("(", ids, ")TM_LDA*", sep=""))
-  
   print("############################################")
   print(paste("# Printing overview of ids: ", paste(ids, collapse = ",")))
   print("############################################")
   
-  for (i in 1:length(files)) {
-    file <- files[i]
-    id <- substr(files[i], 1, 1)
-    data <- readRDS(paste("data", files[i], sep = "/"))
+  for (i in 1:length(ids)) {
+    id <- ids[i]
+    data <- readFileId(id)
     
-    #alpha <- str_match(files[i], "alpha:\ ([0-9.]+)")[,2]
-    #beta <- str_match(files[i], "beta:\ ([0-9.]+)")[,2]
-    #topics <- str_match(files[i], "topics:\ ([0-9]+)")[,2]
-    
-    print(paste("id: ", id, ", alpha: ", data$control$alpha, " = (1/k?: ", eval((1/as.integer(data$numberOfTopics)) == data$control$alpha),
+    print(paste("id: ", id, ", alpha: ", round(data$control$alpha, 2), " = (1/k?: ", eval((1/as.integer(data$numberOfTopics)) == data$control$alpha),
                 "), beta: ", data$control$delta, ", topics: ", data$numberOfTopics, sep = ""))
   }
 }
