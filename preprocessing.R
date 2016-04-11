@@ -165,7 +165,9 @@ readCSV <- function(name) {
   return(text)
 }
 
-runPreprocessing <- function(documents, store = FALSE, name = "clean_corpus.rds") {
+runPreprocessing <- function(csv_name, store = FALSE, name = "clean_corpus.rds") {
+  documents <- readCSV(csv_name)
+  
   # Start!
   cleanCorpus <- cleanMyText(documents)
   
