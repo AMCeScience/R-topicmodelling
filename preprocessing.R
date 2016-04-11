@@ -6,6 +6,7 @@ library(SnowballC)
 library(quanteda)
 library(stringi)
 library(stringr)
+library(methods)
 
 ###############################
 # TM_MAP compatible functions #

@@ -6,12 +6,27 @@ rm(list = ls())
 
 args <- commandArgs(trailingOnly = TRUE)
 
-workspace = args[1]
-corpus_name = args[2]
-csv_name = args[3]
-
-# Set workspace to folder where articles.csv is placed
-setwd(workspace)
+if (length(args) > 0) {
+  print("Taking cli arguments.")
+  
+  workspace = args[1]
+  
+  print(paste("Changing to workspace:", workspace))
+  
+  setwd(workspace)
+  
+  corpus_name = args[2]
+  csv_name = args[3]
+} else {
+  print("Taking preset arguments.")
+  
+  workspace <- "~/workspace/R"
+  
+  setwd(workspace)
+  
+  corpus_name = "clean_corpus.csv"
+  csv_name = "articles.csv"
+}
 
 # Load the config
 if (!exists("configLoaded")) source("config.R")
