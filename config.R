@@ -10,7 +10,9 @@ alpha <- 0.25
 beta <- 0.1
 seed <- list(123234, 890, 112, 239234, 1947)
 
+folder = "data"
+
 # Preprocessing Variables
 numberOfGrams <- 1:2
 CSVfileName <- "articles.csv"
-extraStopWords <- c("big_data")
+extraStopWords <- c("big_data", "ieee", "discussion", "conclusion", "introduction", "methods")

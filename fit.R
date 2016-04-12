@@ -84,7 +84,7 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   return(runData)
 }
 
-TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
+TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, keep) {
   dtm = DocumentTermMatrix(corpus)
   
   control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep)
@@ -135,7 +135,7 @@ TmLDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
                  control = control,
                  numberOfTopics = K)
   
-  saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), "data/TM_LDA_modelfit__.rds"))
+  saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), paste("data", paste(folder, "TM_LDA_modelfit__.rds", sep = "/"), sep = "/")))
    
   print("TmLDASimulation data stored.")
   print(proc.time() - timer)

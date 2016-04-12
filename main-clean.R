@@ -24,7 +24,7 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  corpus_name = "clean_corpus1.rds"
+  corpus_name = "clean_corpus.rds"
   csv_name = "articles.csv"
 }
 
