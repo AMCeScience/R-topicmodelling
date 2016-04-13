@@ -174,10 +174,13 @@ topicSplitMatrix <- function(id1, id2) {
   
   colorMap = c("white", "gold", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
   
-  heatmap.2(x = splitIntersection, cellnote = splitTerms,
-            col = colorMap[1:(nCats + 3)], breaks = -2:(length(unique(smallest$Category)) + 1),
+  nCats = length(unique(smallest$Category))
+  
+  heatmap.2(x = splitIntersection, cellnote = splitTerms, labCol = seq(1, nCats, 1), xlab = "Topics", ylab = "Words",
+            cexRow = 1, cexCol = 1, srtCol = 0,
+            col = colorMap[1:(nCats + 3)], breaks = -2:(nCats + 1),
             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1,
-            trace = "none", key = TRUE, margins = c(7, 7))
+            trace = "none", key = FALSE)
 }
 
 getOverview <- function(ids) {
