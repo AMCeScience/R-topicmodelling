@@ -11,6 +11,9 @@ if (length(args) > 0) {
   
   workspace = args[1]
   
+  # Load the config
+  if (!exists("configLoaded")) source("config.R")
+  
   print(paste("Changing to workspace:", workspace))
   
   setwd(workspace)
@@ -24,14 +27,14 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
+  # Load the config
+  if (!exists("configLoaded")) source("config.R")
+  
   corpus_name = "clean_corpus.rds"
   csv_name = "articles.csv"
 }
 
-# Load the config
-if (!exists("configLoaded")) source("config.R")
-
-if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
+#if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) {
   source("preprocessing.R")
   cleanCorpus <- runPreprocessing(csv_name, store = TRUE, corpus_name)

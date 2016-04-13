@@ -1,4 +1,4 @@
-folder = "data/ovid50"
+folder = "data"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
