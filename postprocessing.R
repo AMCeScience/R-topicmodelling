@@ -1,4 +1,6 @@
-readFileId <- function(id, saliencyFile = FALSE, folder = "data") {
+folder = "data/ovid50"
+
+readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
   
   if(saliencyFile == TRUE) {
@@ -84,7 +86,7 @@ relevance <- function(ids, numberOfTerms = 30) {
     print("Storing data.")
     print(proc.time() - timer)
     
-    saveRDS(termSaliencyData, gsub("XX", id, "data/XXsaliency_terms.rds"))
+    saveRDS(termSaliencyData, gsub("XX", id, paste(folder, "XXsaliency_terms.rds", sep = "/")))
   }
 }
 
