@@ -125,27 +125,35 @@ removeSpecialCharacters <- function(originalCorpus) {
 
 cleanMyText <- function(originalText) {
   # Lowercase everything
+  print("Cleaning: to lower case.")
   originalText <- toLower(originalText)
   
   # Convert to corpus
+  print("Cleaning: convert to corpus.")
   result <- Corpus(VectorSource(originalText))
   
   # Remove special characters
+  print("Cleaning: remove special characters.")
   result <- removeSpecialCharacters(result)
   
   # Remove stopwords
+  print("Cleaning: remove stopwords pass 1.")
   result <- removeStopWords(result, extraStopWords)
   
   # Create compound terms
+  print("Cleaning: create N-grams.")
   result <- createNGrams(result)
   
   # Stem the corpus
+  print("Cleaning: stemming corpus.")
   result <- stemText(result)
   
   # Another round after N-grams
+  print("Cleaning: remove stopwords pass 2.")
   result <- removeStopWords(result, extraStopWords)
   
   # If any weirdly long words are left, remove them
+  print("Cleaning: remove long words.")
   result <- removeOverlyLongWords(result)
   
   # Return as corpus
@@ -170,16 +178,19 @@ runPreprocessing <- function(csv_name, store = FALSE, name = "clean_corpus.rds")
   documents <- readCSV(csv_name)
   
   # Start!
+  print("Starting cleaning process.")
   cleanCorpus <- cleanMyText(documents)
   
+  print("Cleaning: add back document ids.")
   cleanCorpus <- addIDs(cleanCorpus)
   
   if (store == TRUE) {
     # https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
+    print("Cleaning: store into rds file.")
     saveRDS(cleanCorpus, paste("data", name, sep = "/"))
   }
   
-  return(cleanCorpus) 
+  return(cleanCorpus)
 }
 
 # testCorpus <- runPreprocessing(CSVfileName)
