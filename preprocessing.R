@@ -154,8 +154,6 @@ cleanMyText <- function(originalText) {
   print("Cleaning: remove stopwords pass 2.")
   result <- removeStopWords(result, extraStopWords)
   
-  print(extraStopWords)
-  
   # If any weirdly long words are left, remove them
   print("Cleaning: remove long words.")
   result <- removeOverlyLongWords(result)

@@ -140,7 +140,7 @@ topicSplitMatrix <- function(id1, id2) {
       container <- container + getTopicIntersect(loopa, loopb, i)
       
       # Give shared items a different colour
-      container[container > i] = length(unique(loopa$Category)) + 1
+      container[container > i] = length(unique(loopa$Category)) * -1
     }
     
     container <- container + getTopicDifference(loopa, loopb)
@@ -172,8 +172,10 @@ topicSplitMatrix <- function(id1, id2) {
   
   library(gplots)
   
+  colorMap = c("white", "gold", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
+  
   heatmap.2(x = splitIntersection, cellnote = splitTerms,
-            col = c("burlywood", 0, 2:(length(unique(smallest$Category)) + 2)), breaks = -2:(length(unique(smallest$Category)) + 1),
+            col = colorMap[1:(nCats + 3)], breaks = -2:(length(unique(smallest$Category)) + 1),
             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1,
             trace = "none", key = TRUE, margins = c(7, 7))
 }

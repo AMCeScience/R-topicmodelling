@@ -15,6 +15,6 @@ folder = "data"
 # Preprocessing Variables
 numberOfGrams <- 1:2
 CSVfileName <- "articles.csv"
-extraStopWords <- c("big_data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database", "rights_reserved", "record_apa", "journal_abstract")
+extraStopWords <- c("big_data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database", "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal", "conclusionadvancement")
 
 bla <- c()
