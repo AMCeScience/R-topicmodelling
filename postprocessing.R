@@ -1,4 +1,4 @@
-folder = "data"
+folder = "data/ovid"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -140,7 +140,7 @@ topicSplitMatrix <- function(id1, id2) {
       container <- container + getTopicIntersect(loopa, loopb, i)
       
       # Give shared items a different colour
-      container[container > i] = length(unique(loopa$Category)) * -1
+      container[container > i] = length(unique(loopa$Category)) + 1
     }
     
     container <- container + getTopicDifference(loopa, loopb)
@@ -161,6 +161,8 @@ topicSplitMatrix <- function(id1, id2) {
   
   intersection <- getModelIntersect(smallest, biggest)
   
+  intersection[intersection > length(unique(smallest$Category))] = -2
+  
   size <- length(biggest$Term) # number of words
   topics <- length(unique(biggest$Category)) # number of topics
   chunkSize <- size/topics
@@ -172,15 +174,16 @@ topicSplitMatrix <- function(id1, id2) {
   
   library(gplots)
   
-  colorMap = c("white", "gold", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
+  colorMap = c("gold", "white", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
   
   nCats = length(unique(smallest$Category))
+  nTopics = length(unique(biggest$Category))
   
-  heatmap.2(x = splitIntersection, cellnote = splitTerms, labCol = seq(1, nCats, 1), xlab = "Topics", ylab = "Words",
-            cexRow = 1, cexCol = 1, srtCol = 0,
-            col = colorMap[1:(nCats + 3)], breaks = -2:(nCats + 1),
-            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1,
-            trace = "none", key = FALSE)
+  heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                               # Intersection and term data
+            labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,           # Adjust label text, size, and positioning
+            col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                         # Cell colors and color break values (when colors swap)
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = TRUE # Cleanup of plot
+           )
 }
 
 getOverview <- function(ids) {

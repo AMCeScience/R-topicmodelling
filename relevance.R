@@ -141,7 +141,11 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   tinfo$Total <- term.frequency[match(tinfo$Term, vocab)]
   rownames(term.topic.frequency) <- seq_len(K)
   colnames(term.topic.frequency) <- vocab
-  tinfo$Freq <- term.topic.frequency[as.matrix(tinfo[c("Category", "Term")])]
+  
+  termMatrix <- as.matrix(tinfo[c("Category", "Term")])
+  termMatrix <- apply(termMatrix, 2, function(x) { gsub('\\s+', '', x) })
+  
+  tinfo$Freq <- term.topic.frequency[termMatrix]
   
   # last, to compute the areas of the circles when a term is highlighted
   # we must gather all unique terms that could show up (for every combination 

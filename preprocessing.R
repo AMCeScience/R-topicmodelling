@@ -51,7 +51,6 @@ createNGrams <- function(originalCorpus) {
   sparseTerms <- columnCounts < 15 | stri_length(names(columnCounts)) <= 6
   # Remove unwanted terms
   cleanedTerms <- columnCounts[!sparseTerms]
-  cleanedTerms <- cleanedTerms[!names(cleanedTerms) %in% extraStopWords]
   
   # Create list of terms without dashes (for searching purposes)
   noDash <- gsub("_", " ", names(cleanedTerms))
