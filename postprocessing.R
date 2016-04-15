@@ -106,13 +106,15 @@ calcImpression <- function(id) {
   return(impression)
 }
 
-# docsToTopics <- function(id) {
-#   file <- list.files("data", paste(id, "saliency_terms*", sep = ""))
-#   
-#   data <- readRDS(paste("data", file, sep = "/"))
-#   
-#   return(as.matrix(topics(data$LDAData)))
-# }
+storeImpressions <- function(ids) {
+  for (i in 1:length(ids)) {
+    id <- ids[i]
+    
+    data <- calcImpression(id)
+    
+    write.csv(data, file = paste(folder, paste(id, "impression.csv", sep = ""), sep = "/"))
+  }
+}
 
 topicSplitMatrix <- function(id1, id2) {
   getTopicIntersect <- function(model1, model2, topicId) {
@@ -179,10 +181,10 @@ topicSplitMatrix <- function(id1, id2) {
   nCats = length(unique(smallest$Category))
   nTopics = length(unique(biggest$Category))
   
-  heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                               # Intersection and term data
-            labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,           # Adjust label text, size, and positioning
-            col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                         # Cell colors and color break values (when colors swap)
-            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = TRUE # Cleanup of plot
+  heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
+            labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
+            col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                          # Cell colors and color break values (when colors swap)
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = FALSE # Cleanup of plot
            )
 }
 
