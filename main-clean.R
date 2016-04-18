@@ -31,7 +31,7 @@ if (length(args) > 0) {
   if (!exists("configLoaded")) source("config.R")
   
   corpus_name = "clean_corpus.rds"
-  csv_name = "articles.csv"
+  csv_name = "articles_pubmed_ovid_pmc.csv"
 }
 
 #if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))

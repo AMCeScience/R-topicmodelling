@@ -1,4 +1,4 @@
-folder = "data/ovid"
+folder = "data"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -53,6 +53,7 @@ relevance <- function(ids, numberOfTerms = 30) {
   # as.matrix(terms(LDAData, numberOfTerms))
   
   source("relevance.R")
+  library(tm)
   timer <- proc.time()
   
   print(ids)
@@ -116,7 +117,7 @@ storeImpressions <- function(ids) {
   }
 }
 
-topicSplitMatrix <- function(id1, id2) {
+topicSplitMatrix <- function(id1, id2, notes = TRUE) {
   getTopicIntersect <- function(model1, model2, topicId) {
     match <- intersect(model1[model1$Category == topicId,]$Term, model2$Term)
     
@@ -178,14 +179,27 @@ topicSplitMatrix <- function(id1, id2) {
   
   colorMap = c("gold", "white", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
   
+  # trace(heatmap.2, quote(if (!is.null(xlab)) mtext(xlab, side = 1, line = 1)), at = 65)
+  
   nCats = length(unique(smallest$Category))
   nTopics = length(unique(biggest$Category))
   
-  heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
-            labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
-            col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                          # Cell colors and color break values (when colors swap)
-            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = FALSE # Cleanup of plot
-           )
+  if (notes == TRUE) {
+    heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
+              labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
+              col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                          # Cell colors and color break values (when colors swap)
+              Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = FALSE,# Cleanup of plot
+              lhei = c(0.01, 0.99), lwid = c(0.01, 0.99), margins = c(2.5, 3.5)
+             )
+  } else {
+    heatmap.2(x = splitIntersection,                                                                             # Intersection data
+              labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,  # Adjust label text, size, and positioning
+              col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                # Cell colors and color break values (when colors swap)
+              Rowv = FALSE, Colv = FALSE, dendrogram = "none", trace = "none", key = FALSE,                      # Cleanup of plot
+              sepcolor = "black", sepwidth = c(0.005, 0.005),                                                    # Seperation color and size
+              rowsep = 1:nrow(splitIntersection), colsep = 1:ncol(splitIntersection)                             # Seperation locations
+    )
+  }
 }
 
 getOverview <- function(ids) {

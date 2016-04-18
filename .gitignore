@@ -22,3 +22,4 @@ data/perps_harmonic_mean.zip
 data/perps_new.zip
 data/perps_old.zip
 data/split_dtm.rda
+*.csv
