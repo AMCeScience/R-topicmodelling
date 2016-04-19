@@ -1,4 +1,4 @@
-folder = "data"
+folder = "data/ovid/19/ovid_latest"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -52,37 +52,13 @@ relevance <- function(ids, numberOfTerms = 30) {
   # Can also get the raw relevancy instead of saliency
   # as.matrix(terms(LDAData, numberOfTerms))
   
-  source("relevance.R")
-  library(tm)
+  source("relevance-calc.R")
   timer <- proc.time()
   
   print(ids)
   
   for (i in 1:length(ids)) {
-    print("Reading file.")
-    print(proc.time() - timer)
-    
-    id <- ids[i]
-    data <- readFileId(id)
-    
-    # Remove a bunch of sparse terms
-    sparseMatrix = removeSparseTerms(data$dtm, sparse = 0.99)
-    
-    print("Calculating term frequencies.")
-    print(proc.time() - timer)
-    
-    # Term frequency gave memory issues on cloud machine, calculate it here
-    data$termFrequency = colSums(as.matrix(sparseMatrix))
-    
-    usedTerms = colnames(sparseMatrix)
-    phi = data$posterior$phi[][, colnames(data$posterior$phi) %in% colnames(sparseMatrix)]
-    
-    print("Calculating relevances.")
-    print(proc.time() - timer)
-    
-    termSaliencyData <- salientTerms(phi = phi, theta = data$posterior$theta, 
-                                     vocab = usedTerms, doc.length = data$tokensPerDoc, 
-                                     term.frequency = data$termFrequency, R = numberOfTerms)
+    termSaliencyData <- relevanceCalculation(id, numberOfTerms)
     
     print("Storing data.")
     print(proc.time() - timer)
@@ -117,89 +93,28 @@ storeImpressions <- function(ids) {
   }
 }
 
-topicSplitMatrix <- function(id1, id2, notes = TRUE) {
-  getTopicIntersect <- function(model1, model2, topicId) {
-    match <- intersect(model1[model1$Category == topicId,]$Term, model2$Term)
-    
-    return(as.integer(model2$Term %in% match) * topicId)
-  }
-  
-  getTopicDifference <- function(model1, model2) {
-    return(as.integer(!model2$Term %in% intersect(model1$Term, model2$Term)) * -1)
-  }
-  
-  getModelIntersect <- function(model1, model2) {
-    loopa <- model1
-    loopb <- model2
-    
-    if(length(unique(model1$Category)) > length(unique(model2$Category))) {
-      loopa <- model2
-      loopb <- model1
-    }
-    
-    container <- seq(from = 0, to = 0, length.out = length(loopb$Term))
-    
-    for(i in 1:length(unique(loopa$Category))) {
-      container <- container + getTopicIntersect(loopa, loopb, i)
-      
-      # Give shared items a different colour
-      container[container > i] = length(unique(loopa$Category)) + 1
-    }
-    
-    container <- container + getTopicDifference(loopa, loopb)
-    
-    return(container)
-  }
+plotSplitMatrix <- function(id1, id2, notes = TRUE) {
+  source("topic-split-matrix.R")
   
   model1 <- readFileId(id1, TRUE)
   model2 <- readFileId(id2, TRUE)
   
-  biggest <- model2
-  smallest <- model1
+  models <- findBiggestModel(model1, model2)
+  intersection <- topicSplitMatrix(model1, model2)
   
-  if(length(unique(model1$Category)) > length(unique(model2$Category))) {
-    biggest <- model1
-    smallest <- model2
-  }
+  plotMatrix(intersection, models, notes)
+}
+
+plotOptimalSplitMatrix <- function(id1, id2, notes = TRUE) {
+  source("topic-split-matrix.R")
   
-  intersection <- getModelIntersect(smallest, biggest)
+  model1 <- readFileId(id1, TRUE)
+  model2 <- readFileId(id2, TRUE)
   
-  intersection[intersection > length(unique(smallest$Category))] = -2
+  models <- findBiggestModel(model1, model2)
+  intersection <- optimaliseTopicIntersection(id1, id2)
   
-  size <- length(biggest$Term) # number of words
-  topics <- length(unique(biggest$Category)) # number of topics
-  chunkSize <- size/topics
-  
-  # Split intersection into 1 topic per column based on chunkSize
-  splitIntersection <- as.matrix(data.frame(split(intersection, ceiling(seq_along(intersection) / chunkSize))))
-  # Split terms into 1 topic per column based on chunkSize
-  splitTerms <- as.matrix(data.frame(split(biggest$Term, ceiling(seq_along(biggest$Term) / chunkSize))))
-  
-  library(gplots)
-  
-  colorMap = c("gold", "white", "aquamarine", "azure3", "bisque3", "blue", "blueviolet", "brown2", "cadetblue", "chartreuse3", "chocolate1", "darkgoldenrod4")
-  
-  # trace(heatmap.2, quote(if (!is.null(xlab)) mtext(xlab, side = 1, line = 1)), at = 65)
-  
-  nCats = length(unique(smallest$Category))
-  nTopics = length(unique(biggest$Category))
-  
-  if (notes == TRUE) {
-    heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
-              labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
-              col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                          # Cell colors and color break values (when colors swap)
-              Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = FALSE,# Cleanup of plot
-              lhei = c(0.01, 0.99), lwid = c(0.01, 0.99), margins = c(2.5, 3.5)
-             )
-  } else {
-    heatmap.2(x = splitIntersection,                                                                             # Intersection data
-              labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,  # Adjust label text, size, and positioning
-              col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                # Cell colors and color break values (when colors swap)
-              Rowv = FALSE, Colv = FALSE, dendrogram = "none", trace = "none", key = FALSE,                      # Cleanup of plot
-              sepcolor = "black", sepwidth = c(0.005, 0.005),                                                    # Seperation color and size
-              rowsep = 1:nrow(splitIntersection), colsep = 1:ncol(splitIntersection)                             # Seperation locations
-    )
-  }
+  plotMatrix(intersection, models, notes)
 }
 
 getOverview <- function(ids) {
