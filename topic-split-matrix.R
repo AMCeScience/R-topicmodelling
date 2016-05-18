@@ -86,10 +86,13 @@ optimumSearch <- function(bound, stepping, train_id, old_model) {
   while(execute == TRUE && count < 40) {
     new_model <- relevanceCalculation(train_id, bound)
     
+    # Calculate intersect
     intersection <- topicSplitMatrix(new_model, old_model)
+    # Setting errors
     intersection[intersection > 0] = 0
     intersection[intersection < 0] = 1
     
+    # Count total error
     error_data[count] = sum(intersection)
     bound_data[count] = bound
     
@@ -131,7 +134,7 @@ plotMatrix <- function(intersection, models, notes = TRUE) {
               labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
               col = colorMap[1:(nCats + 3)], breaks = -3:(nCats),                                                          # Cell colors and color break values (when colors swap)
               Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "black", notecex = 1, trace = "none", key = FALSE # Cleanup of plot
-              , lhei = c(0.01, 0.99), lwid = c(0.01, 0.99), margins = c(2.5, 3.5)
+              #, lhei = c(0.01, 0.99), lwid = c(0.01, 0.99), margins = c(2.5, 3.5)
     )
   } else {
     heatmap.2(x = splitIntersection,                                                                             # Intersection data

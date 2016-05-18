@@ -12,6 +12,89 @@ readFileId <- function(id, saliencyFile = FALSE) {
   return(readRDS(paste(folder, file, sep = "/")))
 }
 
+wordDistribution <- function(id, numWords = 10, colorTop = TRUE) {
+  data <- readFileId(id)
+  
+  tdm <- as.TermDocumentMatrix(data$dtm)
+  
+  m <- as.matrix(tdm)
+  v <- sort(rowSums(m), decreasing = TRUE)
+  
+  plot(v[seq(1, numWords)], xlab = "", ylab = "")
+  title(xlab = "Word Index", line = 2.1, cex.lab = 1)
+  title(ylab = "Frequency", line = 2.2, cex.lab = 1)
+  
+  if (colorTop == TRUE) {
+    points(x = 1, y = v[1], col = "red", pch = 19)
+    points(x = 2, y = v[2], col = "red", pch = 19)
+    abline(v=100)
+  }
+}
+
+overlap <- function(ids) {
+  perc = 0
+  
+  run = length(ids) - 1
+  
+  for (i in 1:run) {
+    id1 <- ids[i]
+  
+    data1 <- readFileId(id1, TRUE)
+      
+    start = i + 1
+    
+    if (start > run) {
+      next
+    }
+    
+    for (j in start:run) {
+      print(i)
+      print(j)
+      id2 <- ids[j]
+      
+      data2 <- readFileId(id2, TRUE)
+      
+      overlappingWords <- data2$Term[data2$Term %in% data1$Term]
+      
+      percentage = length(overlappingWords) / length(data2$Term)
+      
+      perc = (perc + percentage) / 2
+    }
+  }
+  
+  return(perc)
+}
+
+myWordcloud <- function(id) {
+  data <- readFileId(id)
+
+  dtm2list <- apply(data$dtm, 1, function(x) {
+    paste(rep(names(x), x), collapse = " ")
+  })
+  
+  myCorp <- VCorpus(VectorSource(dtm2list))
+  
+  library(stringr)
+  
+  clean <- tm_map(myCorp, function(document) {
+    PlainTextDocument(str_replace_all(str_replace_all(document$content, "data", ""), "big", ""))
+  })
+    
+  tdm <- TermDocumentMatrix(clean)
+  
+  m <- as.matrix(tdm)
+  v <- sort(rowSums(m), decreasing=TRUE)
+  d <- data.frame(word = names(v),freq=v)
+  
+  library(wordcloud)
+  
+  pal <- brewer.pal(8,"Dark2")
+  png("wordcloud.png", width = 1280,height = 800)
+  wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  #wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = T, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  dev.off()
+}
+
 KLdists <- function(ids) {
   source("KL-distance.R")
   
