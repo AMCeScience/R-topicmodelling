@@ -1,3 +1,7 @@
+workspace <- "~/workspace/R"
+
+setwd(workspace)
+
 folder = "data/ovid/19/ovid_latest"
 
 readFileId <- function(id, saliencyFile = FALSE) {
@@ -15,13 +19,15 @@ readFileId <- function(id, saliencyFile = FALSE) {
 wordDistribution <- function(id, numWords = 10, colorTop = TRUE) {
   data <- readFileId(id)
   
+  library(tm)
+  
   tdm <- as.TermDocumentMatrix(data$dtm)
   
   m <- as.matrix(tdm)
   v <- sort(rowSums(m), decreasing = TRUE)
   
   plot(v[seq(1, numWords)], xlab = "", ylab = "")
-  title(xlab = "Word Index", line = 2.1, cex.lab = 1)
+  title(xlab = "Word Rank", line = 2.1, cex.lab = 1)
   title(ylab = "Frequency", line = 2.2, cex.lab = 1)
   
   if (colorTop == TRUE) {
@@ -32,33 +38,46 @@ wordDistribution <- function(id, numWords = 10, colorTop = TRUE) {
 }
 
 overlap <- function(ids) {
-  perc = 0
+  perc <- matrix(, nrow = length(ids), ncol = length(ids))
+  expected <- matrix(, nrow = length(ids), ncol = length(ids))
+  diff <- matrix(, nrow = length(ids), ncol = length(ids))
   
-  run = length(ids) - 1
+  run = length(ids)
   
-  for (i in 1:run) {
+  for (i in 1:(run - 1)) {
     id1 <- ids[i]
   
     data1 <- readFileId(id1, TRUE)
       
     start = i + 1
+      
+    perc[i, i] = 1
     
     if (start > run) {
       next
     }
     
     for (j in start:run) {
-      print(i)
-      print(j)
+      perc[j, j] = 1
+      
       id2 <- ids[j]
       
       data2 <- readFileId(id2, TRUE)
       
-      overlappingWords <- data2$Term[data2$Term %in% data1$Term]
+      inter = length(intersect(data1$Term, data2$Term))
       
-      percentage = length(overlappingWords) / length(data2$Term)
+      setSize = length(unique(data1$Term)) + length(unique(data2$Term))
       
-      perc = (perc + percentage) / 2
+      percentage =  (2 * inter) / setSize
+      
+      perc[i, j] = percentage
+      perc[j, i] = percentage
+      
+      expected[i, j] = (2 * length(unique(data1$Term))) / setSize
+      expected[j, i] = (2 * length(unique(data1$Term))) / setSize
+      
+      diff[i, j] = expected[i, j] - perc[i, j]
+      diff[j, i] = expected[j, i] - perc[j, i]
     }
   }
   
@@ -150,6 +169,16 @@ relevance <- function(ids, numberOfTerms = 30) {
   }
 }
 
+impressionsToExcel <- function(ids) {
+  library(xlsx)
+  
+  for (id in ids) {
+    data <- calcImpression(id)
+    
+    write.xlsx(data, file="relevancies.xlsx", sheetName=paste("sheet", id), append=T)
+  }
+}
+
 calcImpression <- function(id) {
   data <- readFileId(id, saliencyFile = TRUE)
   
@@ -157,13 +186,30 @@ calcImpression <- function(id) {
   topics <- max(data[,2]) # number of topics
   chunkSize <- size/topics
   
+  relevanceCols <- data[,grepl("relevance", colnames(data))]
+  
+  recalcRelevance <- apply(relevanceCols, 2, function(x) { max(x) / x })
+  
+  rels <- matrix(, nrow = length(recalcRelevance[,1]), ncol = 1)
+  colCount = 1
+  
+  for (i in 1:length(recalcRelevance[,1])) {
+    rels[i] = recalcRelevance[i, colCount]
+    
+    if(i %% 30 == 0) {
+      colCount = colCount + 1
+    }
+  }
+  
   # Take only the text, they are already sorted on relevance/saliency
-  impData <- data[,1]
+  impData <- cbind(data[,c(1,2)], rels)
   
   # Split the data into chunks and put into frame
-  impression <- data.frame(split(impData, ceiling(seq_along(impData) / chunkSize)))
+  impression <- data.frame(split(impData, impData$Category))
   
-  return(impression)
+  impressionFilter <- impression[, -grep("Category", colnames(impression))]
+  
+  return(impressionFilter)
 }
 
 storeImpressions <- function(ids) {
