@@ -1,1 +1,0 @@
-data <- read.csv("data/impressions.csv")

@@ -11,6 +11,7 @@ beta <- 0.1
 seed <- list(123234, 890, 112, 239234, 1947)
 
 folder = "data"
+rangeAlpha = "true"
 
 # Preprocessing Variables
 numberOfGrams <- 1:2

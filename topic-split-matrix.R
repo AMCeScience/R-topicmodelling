@@ -1,32 +1,33 @@
 topicSplitMatrix <- function(model1, model2) {
+  # Get a vector of integers denoting the intersection of a certain topic in model1 as compared to model2
+  # The returned integer is equal to the topicId
   getTopicIntersect <- function(model1, model2, topicId) {
     match <- intersect(model1[model1$Category == topicId,]$Term, model2$Term)
     
     return(as.integer(model2$Term %in% match) * topicId)
   }
   
+  # Get a vector of integers denoting the difference between all topics in model2 as compared to model1
   getTopicDifference <- function(model1, model2) {
     return(as.integer(!model2$Term %in% intersect(model1$Term, model2$Term)) * -1)
   }
   
-  getModelIntersect <- function(model1, model2) {
-    loopa <- model1
-    loopb <- model2
-    
-    if(length(unique(model1$Category)) > length(unique(model2$Category))) {
-      loopa <- model2
-      loopb <- model1
-    }
-    
+  # Calculate vector of integers
+  # Representing topics from model1 that appear in model2
+  getModelIntersect <- function(loopa, loopb) {
+    # Initialise container with zeroes
     container <- seq(from = 0, to = 0, length.out = length(loopb$Term))
     
+    # Loop the topics
     for(i in 1:length(unique(loopa$Category))) {
+      # Give items in model2 the topic number of model1 based on intersection
       container <- container + getTopicIntersect(loopa, loopb, i)
       
       # Give shared items a different colour
-      container[container > i] = length(unique(loopa$Category)) + 1
+      container[container > i] = -2
     }
     
+    # Give new items a different colour
     container <- container + getTopicDifference(loopa, loopb)
     
     return(container)
@@ -35,8 +36,6 @@ topicSplitMatrix <- function(model1, model2) {
   models <- findBiggestModel(model1, model2)
   
   intersection <- getModelIntersect(models$smallest, models$biggest)
-  
-  intersection[intersection > length(unique(models$smallest$Category))] = -2
   
   return(intersection)
 }
