@@ -12,7 +12,7 @@ if (length(args) > 0) {
   
   workspace = args[1]
   is <- 1 : 10
-  ks = c(3,4,5,6,7,8,20)
+  ks = c(3, 4, 5, 6, 7, 8, seq(10, 100, 5))
   cores = 7
   
   # Load the config
@@ -31,14 +31,13 @@ if (length(args) > 0) {
   ks = c(4,5)
   cores = 2
   
-  burning = 800
-  iter = 1000
-  
   setwd(workspace)
   
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
+  burnin = 800
+  iter = 1000
   corpus_name = "clean_corpus.rds"
 }
 
@@ -88,10 +87,10 @@ for (i in is) {
   # fit a bunch of models -- varying the number of topics
   # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
   # has a nice, concise overview of model selection for LDA
-  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores)
+  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores, mc.silent = TRUE)
   
   # Plot the perplexity
-  perps[,count] <- unlist(mclapply(models, perplexity, dtm_test, mc.cores = cores))
+  perps[,count] <- unlist(mclapply(models, perplexity, dtm_test, mc.cores = cores, mc.silent = TRUE))
   
   saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   
