@@ -141,13 +141,15 @@ KLdists <- function(ids) {
 KLColourMatrix <- function(id1, id2) {
   source("KL-distance.R")
   
-  KLData <- as.matrix(KLorder(KLdistFromIds(id1, id2)))
-  
+  KLData <- as.matrix(KLorder(KLdistFromIds(id2, id1)))
+
   library(gplots)
   
-  heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10),
-            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1,
-            trace = "none", key = TRUE, margins = c(7, 7))
+  dev.off()
+  heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10), 
+            srtCol = 0, labCol = seq(1,length(KLData[1,]),1), cexRow = 1, cexCol = 1, xlab = "Model 1, topics", ylab = "Model 2, topics",
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1, trace = "none", key = FALSE, 
+            lhei = c(0.05, 0.95), lwid = c(0.05, 0.95), margins = c(3, 3.3))
 }
 
 relevance <- function(ids, numberOfTerms = 30) {
@@ -244,6 +246,15 @@ plotOptimalSplitMatrix <- function(id1, id2, notes = TRUE) {
   intersection <- optimaliseTopicIntersection(id1, id2)
   
   plotMatrix(intersection, models, notes)
+}
+
+perplexityPlot <- function(id) {
+  perps <- readRDS(paste(folder, paste("perplexity", id, ".rds", sep = ""), sep = "/"))
+  
+  # Get perps somewhere
+  meanPerps <- rowMeans(perps[2:length(perps)])
+  
+  plot(perps[,1], meanPerps)
 }
 
 getOverview <- function(ids) {

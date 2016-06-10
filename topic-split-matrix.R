@@ -128,6 +128,7 @@ plotMatrix <- function(intersection, models, notes = TRUE) {
   nCats = length(unique(models$smallest$Category))
   nTopics = length(unique(models$biggest$Category))
   
+  dev.off()
   if (notes == TRUE) {
     heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
               labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning
