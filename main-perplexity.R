@@ -27,9 +27,12 @@ if (length(args) > 0) {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
-  is <- 1 : 10
+  is <- 1 : 2
   ks = c(4,5)
   cores = 2
+  
+  burning = 800
+  iter = 1000
   
   setwd(workspace)
   
@@ -88,7 +91,7 @@ for (i in is) {
   models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores)
   
   # Plot the perplexity
-  perps[,count] <- sapply(models, perplexity, dtm_test)
+  perps[,count] <- unlist(mclapply(models, perplexity, dtm_test, mc.cores = cores))
   
   saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   
