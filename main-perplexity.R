@@ -13,6 +13,7 @@ if (length(args) > 0) {
   workspace = args[1]
   is <- 1 : 10
   ks = c(3,4,5,6,7,8,20)
+  cores = 7
   
   # Load the config
   if (!exists("configLoaded")) source("config.R")
@@ -28,6 +29,7 @@ if (length(args) > 0) {
   workspace <- "~/workspace/R"
   is <- 1 : 10
   ks = c(4,5)
+  cores = 2
   
   setwd(workspace)
   
@@ -83,7 +85,7 @@ for (i in is) {
   # fit a bunch of models -- varying the number of topics
   # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
   # has a nice, concise overview of model selection for LDA
-  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE))
+  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores)
   
   # Plot the perplexity
   perps[,count] <- sapply(models, perplexity, dtm_test)
