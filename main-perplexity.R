@@ -11,8 +11,8 @@ if (length(args) > 0) {
   print("Taking cli arguments.")
   
   workspace = args[1]
-  is <- args[3] : args[4]
-  ks = args[5] : args[6]
+  is <- 1 : 10
+  ks = c(3,4,5,6,7,8,20)
   
   # Load the config
   if (!exists("configLoaded")) source("config.R")
@@ -71,6 +71,8 @@ count <- 2
 
 timer <- proc.time()
 
+pb <- txtProgressBar(min=0, max=length(is), style=3)
+
 for (i in is) {
   merge <- merge_corpus(split, i)
   
@@ -86,11 +88,12 @@ for (i in is) {
   # Plot the perplexity
   perps[,count] <- sapply(models, perplexity, dtm_test)
   
-  saveRDS(perps, gsub("__", i, paste(folder, "perplexity_incremental__.rds", sep = "/")))
+  saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   
   count <- count + 1
+  setTxtProgressBar(pb, i)
 }
-
+close(pb)
 print(proc.time() - timer)
 
-saveRDS(perps, gsub("__", i, paste(folder, "perplexity__.rds", sep = "/")))
+saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))
