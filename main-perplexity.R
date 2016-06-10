@@ -40,7 +40,7 @@ if (length(args) > 0) {
 library(tm)
 library(parallel)
 
-if (file.exists("data/clean_corpus.rds")) cleanCorpus <- readRDS("data/clean_corpus.rds")
+if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) return
 
 library(topicmodels)
