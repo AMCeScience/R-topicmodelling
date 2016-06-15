@@ -100,4 +100,15 @@ for (i in is) {
 close(pb)
 print(proc.time() - timer)
 
-saveRDS(perps, gsub("__", i, "data/perplexity__.rds"))
+saveRDS(perps, "data/perplexity_complete.rds")
+
+perplexityPlot <- function() {
+  data <- readRDS("data/perplexity_complete.rds")
+  
+  dataMeans <- data.frame("T" = data[,1])
+  dataMeans[,"Perplexity (x1000)"] <- rowMeans(data[,2:id]) / 1000
+  
+  plot(dataMeans, xlab = "", ylab = "")
+  title(xlab = "T", line = 2.3, cex.lab = 1)
+  title(ylab = "Perplexity (x1000)", line = 2.4, cex.lab = 1)
+}

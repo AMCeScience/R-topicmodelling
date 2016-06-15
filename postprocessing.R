@@ -2,7 +2,7 @@ workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data/ovid/19/ovid_latest"
+folder = "data/test_runs/alpha"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -10,6 +10,8 @@ readFileId <- function(id, saliencyFile = FALSE) {
   if(saliencyFile == TRUE) {
     patt = "saliency_terms*"
   }
+  
+  print(folder)
   
   file <- list.files(folder, paste(id, patt, sep = ""))
   
@@ -145,11 +147,12 @@ KLColourMatrix <- function(id1, id2) {
 
   library(gplots)
   
-  dev.off()
   heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10), 
-            srtCol = 0, labCol = seq(1,length(KLData[1,]),1), cexRow = 1, cexCol = 1, xlab = "Model 1, topics", ylab = "Model 2, topics",
+            srtCol = 0, labCol = seq(1,length(KLData[1,]),1), cexRow = 1, cexCol = 1, 
+            xlab = gsub("__", id1, "Model __, topics"), ylab = gsub("__", id2, "Model __, topics"),
             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1, trace = "none", key = FALSE, 
-            lhei = c(0.05, 0.95), lwid = c(0.05, 0.95), margins = c(3, 3.3))
+            lhei = c(0.10, 0.90), lwid = c(0.10, 0.90), margins = c(3, 3.3))
+  #dev.off()
 }
 
 relevance <- function(ids, numberOfTerms = 30) {

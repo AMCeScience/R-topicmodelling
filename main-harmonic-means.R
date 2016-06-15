@@ -70,3 +70,16 @@ all_hm <- unlist(mclapply(all_logLiks, harmonicMean, mc.cores = cores, mc.silent
 print(proc.time() - timer)
 
 saveRDS(all_hm, "data/harmonic-means.rds")
+
+harmonicMeansPlot <- function(id) {
+  data <- readRDS(gsub("__", id, "data/harmonic-means.rds"))
+  
+  ks = c(3, 4, 5, 6, 7, 8, seq(10, 100, 5))
+  
+  dataMeans <- data.frame("T" = ks)
+  dataMeans[,"Harmonic Mean"] <- data / 1000
+  
+  plot(dataMeans, xlab = "", ylab = "")
+  title(xlab = "T", line = 2.3, cex.lab = 1)
+  title(ylab = "Harmonic Mean (x1000)", line = 2.4, cex.lab = 1)
+}
