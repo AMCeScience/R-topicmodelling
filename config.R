@@ -16,4 +16,9 @@ rangeAlpha = "true"
 # Preprocessing Variables
 numberOfGrams <- 1:2
 CSVfileName <- "articles.csv"
-extraStopWords <- c("big_data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database", "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal", "conclusionadvancement", "apa", "reserved", "rights_journal")
+extraStopWords <- c("ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database", 
+                    "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal", 
+                    "conclusionadvancement", "apa", "reserved", "rights_journal", 
+                    "test", "case", "proven_probable", "perform", "result", "detect", "present", "reveal", "year",
+                    "show", "report", "disseminate", "technique", "major", "increase", "include", "challenge", "total",
+                    "special", "count", "significantly_higher")
