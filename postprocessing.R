@@ -1,8 +1,43 @@
+### FUNCTIONS ###
+# readFileID(id, saliencyFile = false): 
+  # reads TM_LDA or saliency_terms file from 'folder' with specific id
+
+# wordDistribution(id, numWords = 10, colorTop = true): 
+  # calculates and plots word distribution of the top 'numWords' most frequent words from DocumentTermMatrix in file with specific id
+# overlap(ids):
+  # calculates expected and actual overlap between files with specific ids, input as: c(1,2,3,...)
+# myWordcloud(id):
+  # creates and plots word cloud for file with specific id
+
+# Kullback Leibler distances (see KL-distance.R)
+# KLdists(ids):
+  # calculates and prints the KL distances between files with specific ids, input as: c(1,2,3,...)
+# KLColourMatrix(id1, id2):
+  # creates a heatmap plot of KL distances between two files with specific ids 'id1' and 'id2'
+
+# relevance(ids, numberOfTerms = 30)
+  # calculates relevance for the 'numberOfTerms' most relevant words according to Sievert et. al. (see relevance.R and relevance-calc.R)
+  # stores output in saliency_terms file
+# calcImpression(id)
+  # gets the relevancies from saliency_terms file with specific id, normalises relevancies to a maximum of 1, and prints the words and relevancies per topic
+# impressionsToExcel(ids)
+  # invokes calcImpression on files with specific ids and stores output in excel file, input as: c(1,2,3,...)
+# impressionsToCSV(ids)
+  # invokes calcImpression on files with specific ids and stores output in CSV file, input as: c(1,2,3,...)
+
+# plotSplitMatrix(id1, id2, notes = true)
+  # generates cross-occurrence map for files with specific ids 'id1' and 'id2', see topic-split-matrix.R
+# plotOptimalSplitMatrix(id1, id2, notes = true)
+  # generates optimalised cross-occurrence map for files with specific ids 'id1' and 'id2', see topic-split-matrix.R
+
+# getOverview(ids)
+  # prints a list of information (i.e. id, alpha, beta, topics) for files with specific ids, input as: c(1,2,3,...)
+
 workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data/test_runs/alpha"
+folder = "data/sysrev"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -11,7 +46,8 @@ readFileId <- function(id, saliencyFile = FALSE) {
     patt = "saliency_terms*"
   }
   
-  print(folder)
+  #print(id)
+  #print(folder)
   
   file <- list.files(folder, paste(id, patt, sep = ""))
   
@@ -162,15 +198,13 @@ relevance <- function(ids, numberOfTerms = 30) {
   source("relevance-calc.R")
   timer <- proc.time()
   
-  print(ids)
-  
   for (i in 1:length(ids)) {
-    termSaliencyData <- relevanceCalculation(id, numberOfTerms)
+    termSaliencyData <- relevanceCalculation(i, numberOfTerms)
     
     print("Storing data.")
     print(proc.time() - timer)
     
-    saveRDS(termSaliencyData, gsub("XX", id, paste(folder, "XXsaliency_terms.rds", sep = "/")))
+    saveRDS(termSaliencyData, gsub("XX", i, paste(folder, "XXsaliency_terms.rds", sep = "/")))
   }
 }
 
@@ -180,7 +214,7 @@ impressionsToExcel <- function(ids) {
   for (id in ids) {
     data <- calcImpression(id)
     
-    write.xlsx(data, file="relevancies.xlsx", sheetName=paste("sheet", id), append=T)
+    write.xlsx(data, file=paste(folder, "relevancies.xlsx", sep = "/"), sheetName=paste("sheet", id), append=T)
   }
 }
 
@@ -201,12 +235,12 @@ calcImpression <- function(id) {
   for (i in 1:length(recalcRelevance[,1])) {
     rels[i] = recalcRelevance[i, colCount]
     
-    if(i %% 30 == 0) {
+    if(i %% chunkSize == 0) {
       colCount = colCount + 1
     }
   }
   
-  # Take only the text, they are already sorted on relevance/saliency
+  # Take the text, bind the relevancies
   impData <- cbind(data[,c(1,2)], rels)
   
   # Split the data into chunks and put into frame
@@ -217,7 +251,7 @@ calcImpression <- function(id) {
   return(impressionFilter)
 }
 
-storeImpressions <- function(ids) {
+impressionsToCSV <- function(ids) {
   for (i in 1:length(ids)) {
     id <- ids[i]
     
@@ -249,15 +283,6 @@ plotOptimalSplitMatrix <- function(id1, id2, notes = TRUE) {
   intersection <- optimaliseTopicIntersection(id1, id2)
   
   plotMatrix(intersection, models, notes)
-}
-
-perplexityPlot <- function(id) {
-  perps <- readRDS(paste(folder, paste("perplexity", id, ".rds", sep = ""), sep = "/"))
-  
-  # Get perps somewhere
-  meanPerps <- rowMeans(perps[2:length(perps)])
-  
-  plot(perps[,1], meanPerps)
 }
 
 getOverview <- function(ids) {
