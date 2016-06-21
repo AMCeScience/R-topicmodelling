@@ -59,7 +59,7 @@ library(topicmodels)
 #   each fitted model.
 # -----------------------------------------------------------------------
 
-source("dtm_handlers.R")
+source("dtm-handlers.R")
 
 if (file.exists("data/split_corpus.rds")) {
   split <- readRDS("data/split_corpus.rds")
