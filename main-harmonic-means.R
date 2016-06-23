@@ -47,6 +47,8 @@ library(parallel)
 if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) return
 
+print(paste("Using corpus: ", corpus_name))
+
 library(topicmodels)
 
 library(Rmpfr)
@@ -59,6 +61,8 @@ source("fit.R")
 
 timer <- proc.time()
 
+print(cleanCorpus[[1]]$content)
+
 # Solution: https://stackoverflow.com/questions/21355156/topic-models-cross-validation-with-loglikelihood-or-perplexity
 all_fitted <- mclapply(ks, function(k) TmLDASimulation(cleanCorpus, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores, mc.silent = TRUE)
 # all_fitted <- lapply(ks, function(k) { train <- LDA(dtm_train, k = k, method = "Gibbs", control = list(burnin = burnin, iter = iter, keep = keep)) })
@@ -69,10 +73,10 @@ all_hm <- unlist(mclapply(all_logLiks, harmonicMean, mc.cores = cores, mc.silent
 
 print(proc.time() - timer)
 
-saveRDS(all_hm, "data/harmonic-means.rds")
+saveRDS(all_hm, gsub("__", gsub(".rds", "", corpus_name), "data/harmonic-means-__.rds"))
 
-harmonicMeansPlot <- function(id) {
-  data <- readRDS(gsub("__", id, "data/harmonic-means.rds"))
+harmonicMeansPlot <- function(corpus_name) {
+  data <- readRDS(gsub("__", corpus_name, "data/harmonic-means-__.rds"))
   
   ks = c(3, 4, 5, 6, 7, 8, seq(10, 100, 5))
   

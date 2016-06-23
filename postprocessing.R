@@ -198,13 +198,13 @@ relevance <- function(ids, numberOfTerms = 30) {
   source("relevance-calc.R")
   timer <- proc.time()
   
-  for (i in 1:length(ids)) {
-    termSaliencyData <- relevanceCalculation(i, numberOfTerms)
+  for (id in ids) {
+    termSaliencyData <- relevanceCalculation(id, numberOfTerms)
     
     print("Storing data.")
     print(proc.time() - timer)
     
-    saveRDS(termSaliencyData, gsub("XX", i, paste(folder, "XXsaliency_terms.rds", sep = "/")))
+    saveRDS(termSaliencyData, gsub("XX", id, paste(folder, "XXsaliency_terms.rds", sep = "/")))
   }
 }
 
