@@ -24,7 +24,7 @@ library(tm)
 library(dplyr)
 library(stringi)
 
-LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
+LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
   # https://stackoverflow.com/questions/21148049/r-topic-modeling-lda-command-lexicalize-giving-unexpected-results
@@ -39,7 +39,7 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   # Get the sum of terms per document
   tokensPerDoc <- sapply(LDADocuments, function(x) sum(x[2, ]))
   
-  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter)
+  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, thin = thin)
   
   print("LDASimulation setup done.")
   print(proc.time() - timer)
@@ -62,7 +62,7 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
   theta <- t(apply(LDAData$document_sums + alpha, 2, function(x) x/sum(x)))
   # Topic to term distribution estimate
   # Matrix where each column contains the probability distribution over words for 1 topic (1 cell is a probability of word x for topic y)
-  phi <- t(apply(t(LDAData$topics) + eta, 2, function(x) x/sum(x)))
+  phi <- t(apply(t(LDAData$topics) + beta, 2, function(x) x/sum(x)))
   
   print("LDASimulation posteriors done.")
   print(proc.time() - timer)
@@ -76,19 +76,24 @@ LDASimulation <- function(corpus, K, alpha, beta, burnin, iter, keep) {
                  control = control, 
                  numberOfTopics = K)
   
-  saveRDS(runData, gsub("__", Sys.time(), "data/LDA_modelfit__.rds"))
-  
-  print("LDASimulation data stored.")
-  print(proc.time() - timer)
+  if (store == TRUE) {
+    saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), paste("data", folder, "TM_LDA_modelfit__.rds", sep = "/")))
+    
+    print("LDASimulation data stored.")
+    print(proc.time() - timer)
+  }
   
   return(runData)
 }
 
-TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, keep, store = TRUE) {
+TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE, multiple = FALSE) {
   dtm = DocumentTermMatrix(corpus)
   
-  control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep)
-  #control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, nstart = nstart, best = TRUE, seed = seed)
+  if (multiple) {
+    control = list(alpha = alpha, delta = beta, iter = iter, keep = 1, nstart = 3, best = FALSE, seed = list(123234, 890, 112))
+  } else {
+    control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, keep = keep, thin = thin)
+  }
   
   print("TmLDASimulation setup done.")
   print(proc.time() - timer)
@@ -97,6 +102,10 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, keep, 
   
   print("TmLDASimulation run done.")
   print(proc.time() - timer)
+  
+  if (multiple) {
+    return(LDAData)
+  }
   
   # Solution to translate between topicmodels and LDAVis: http://www.r-bloggers.com/a-link-between-topicmodels-lda-and-ldavis/
   # Document to topic distribution estimate
@@ -142,7 +151,7 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, keep, 
     print(proc.time() - timer)
   }
   
-  return(runData$LDAData)
+  return(LDAData)
 }
 
 visualise <- function(runData, outputFolder) {

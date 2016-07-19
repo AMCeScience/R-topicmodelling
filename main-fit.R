@@ -37,8 +37,11 @@ if (length(args) > 0) {
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
-  source("preprocessing.R")
-  cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
+  storeFolder = "tests"
+  
+  cleanCorpus <- readRDS("data/clean_corpus.rds")
+#   source("preprocessing.R")
+#   cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
 }
 
 print("Corpus loaded.")
@@ -49,7 +52,7 @@ source("fit.R")
 print("Starting run.")
 timer <- proc.time()
 
-data <- TmLDASimulation(cleanCorpus, storeFolder, k, alpha, beta, burnin, iter, keep)
+data <- TmLDASimulation(cleanCorpus, storeFolder, k, alpha, beta, burnin, iter, thin, keep)
 #data <- TmLDASimulation(cleanCorpus, folder k, alpha, beta, iter, iter, keep, thin, nstart)
 
 print("Ending run.")

@@ -8,7 +8,7 @@ stacked <- matrix(t(data), ncol = 2, nrow = (ncol(data) / 2) * nrow(data), byrow
 
 vectorised <- split(stacked[,2], stacked[,1])
 
-words <- matrix(, nrow = length(vectorised), ncol = 6)
+words <- matrix(data = NA, nrow = length(vectorised), ncol = 6)
 
 for (i in 1:length(vectorised)) {
   item <- vectorised[i]
@@ -38,7 +38,7 @@ ordered <- grouped[order(rank(appearance))]
 
 subset <- ordered[2:12]
 
-plotmatrix <- matrix(, nrow = 2, ncol = length(subset$appearance))
+plotmatrix <- matrix(data = NA, nrow = 2, ncol = length(subset$appearance))
 dimnames(plotmatrix) <- list(rownames(plotmatrix), subset$appearance)
 plotmatrix[1,] <- subset$unique
 plotmatrix[2,] <- subset$notunique

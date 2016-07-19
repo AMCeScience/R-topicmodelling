@@ -20,14 +20,14 @@ topicSplitMatrix <- function(model1, model2) {
     
     # Loop the topics
     for(i in 1:length(unique(loopa$Category))) {
-      # Give items in model2 the topic number of model1 based on intersection
+      # Give items in model2 the topic number of model1 based on intersection (value = topic id)
       container <- container + getTopicIntersect(loopa, loopb, i)
       
-      # Give shared items a different colour
+      # Give shared items a different colour (value = -2)
       container[container > i] = -2
     }
     
-    # Give new items a different colour
+    # Give new items a different colour (value = -1)
     container <- container + getTopicDifference(loopa, loopb)
     
     return(container)
@@ -128,7 +128,6 @@ plotMatrix <- function(intersection, models, notes = TRUE) {
   nCats = length(unique(models$smallest$Category))
   nTopics = length(unique(models$biggest$Category))
   
-  dev.off()
   if (notes == TRUE) {
     heatmap.2(x = splitIntersection, cellnote = splitTerms,                                                                # Intersection and term data
               labCol = seq(1, nTopics, 1), xlab = "Topics", ylab = "Words", cexRow = 1, cexCol = 1, srtCol = 0,            # Adjust label text, size, and positioning

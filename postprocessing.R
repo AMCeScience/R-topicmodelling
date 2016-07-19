@@ -37,7 +37,7 @@ workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data/sysrev"
+folder = "data/tests"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -76,9 +76,9 @@ wordDistribution <- function(id, numWords = 10, colorTop = TRUE) {
 }
 
 overlap <- function(ids) {
-  perc <- matrix(, nrow = length(ids), ncol = length(ids))
-  expected <- matrix(, nrow = length(ids), ncol = length(ids))
-  diff <- matrix(, nrow = length(ids), ncol = length(ids))
+  perc <- matrix(data = NA, nrow = length(ids), ncol = length(ids))
+  expected <- matrix(data = NA, nrow = length(ids), ncol = length(ids))
+  diff <- matrix(data = NA, nrow = length(ids), ncol = length(ids))
   
   run = length(ids)
   
@@ -214,7 +214,13 @@ impressionsToExcel <- function(ids) {
   for (id in ids) {
     data <- calcImpression(id)
     
-    write.xlsx(data, file=paste(folder, "relevancies.xlsx", sep = "/"), sheetName=paste("sheet", id), append=T)
+    filename <- gsub("XX", id, paste(folder, "XXrelevancies.xlsx", sep = "/"))
+    
+    if (file.exists(filename)) {
+      file.remove(filename)
+    }
+    
+    write.xlsx(data, file = filename, sheetName = paste("sheet", id), append = TRUE)
   }
 }
 
@@ -229,9 +235,10 @@ calcImpression <- function(id) {
   
   recalcRelevance <- apply(relevanceCols, 2, function(x) { max(x) / x })
   
-  rels <- matrix(, nrow = length(recalcRelevance[,1]), ncol = 1)
+  rels <- matrix(data = NA, nrow = length(recalcRelevance[,1]), ncol = 1)
   colCount = 1
   
+  # remove up to 30
   for (i in 1:length(recalcRelevance[,1])) {
     rels[i] = recalcRelevance[i, colCount]
     
@@ -241,7 +248,8 @@ calcImpression <- function(id) {
   }
   
   # Take the text, bind the relevancies
-  impData <- cbind(data[,c(1,2)], rels)
+  impData <- data[,c(1,2)]
+  #impData <- cbind(data[,c(1,2)], rels)
   
   # Split the data into chunks and put into frame
   impression <- data.frame(split(impData, impData$Category))
