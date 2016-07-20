@@ -20,7 +20,7 @@ if (length(args) > 0) {
   
   # Overwrite the defaults
   storeFolder = args[2]
-  CSVfileName = args[3]
+  RDSfilename = args[3]
   ks = seq(5, 100, 5)
   cores = 7
   #k = args[4]
@@ -28,7 +28,7 @@ if (length(args) > 0) {
   #alpha = as.integer(divider)/as.integer(k)
   #beta = args[6]
   
-  cleanCorpus <- readRDS(paste("data", CSVfileName, sep = "/"))
+  cleanCorpus <- readRDS(RDSfilename)
 } else {
   print("Taking preset arguments.")
   
