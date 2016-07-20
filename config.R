@@ -1,10 +1,10 @@
 configLoaded <- TRUE
 
 k <- 75 # Number of topics
-iter <- 1000 # Iterations
-burnin <- 500
-thin <- 500
-nstart <- 5
+iter <- 500 # Iterations
+burnin <- 200
+thin <- 200
+nstart <- 3
 keep <- 10
 alpha <- 0.38
 beta <- 0.01
