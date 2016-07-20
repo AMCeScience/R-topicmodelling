@@ -28,7 +28,7 @@ if (length(args) > 0) {
   #alpha = as.integer(divider)/as.integer(k)
   #beta = args[6]
   
-  cleanCorpus <- readRDS(RDSfilename)
+  cleanCorpus <- readRDS(paste("data", RDSfilename, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
