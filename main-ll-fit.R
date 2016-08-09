@@ -21,7 +21,7 @@ if (length(args) > 0) {
   # Overwrite the defaults
   storeFolder = args[2]
   RDSfilename = args[3]
-  ks = seq(5, 100, 5)
+  ks = c(seq(5, 100, 5), seq(150, 500, 50))
   cores = 7
   #k = args[4]
   #divider = args[5]
@@ -46,9 +46,6 @@ if (length(args) > 0) {
   storeFolder <- "tests"
   
   cleanCorpus <- readRDS("data/clean_corpus.rds")
-  #cleanCorpus <- readRDS("data/clean_pubmed_ovid_pmc.rds")
-  #source("preprocessing.R")
-  #cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
 }
 
 print("Corpus loaded.")
@@ -120,26 +117,36 @@ saveRDS(data, paste("data", storeFolder, "TM_LDA_LL_FULL_FIT.rds", sep = "/"))
 #   quit
 # }
 #
-highest_lls <- list()
 
-for (ll_lists in data) {
-  all_lls <- list()
-  
-  for (ll_list in ll_lists) {
-    ll_list <- ll_list@fitted[[1]]@logLiks
-    
-    all_lls <- c(all_lls, tail(ll_list, n = 1))
-  }
-  
-  highest_lls <- c(highest_lls, max(ll_list))
-}
-
-saveRDS(highest_lls, paste("data", storeFolder, "TM_LDA_MCMC_LL.rds", sep = "/"))
-
-# d<-t(rbind(c(seq(5,100,5)), highest_lls))
-# plot(d, type="o", xlab="", ylab="", xlim=c(0,100))
+# highest_lls <- list()
+# 
+# for (ll_lists in data) {
+#   all_lls <- list()
+#   
+#   for (ll_list in ll_lists) {
+#     ll_list <- ll_list@fitted[[1]]@logLiks
+#     
+#     all_lls <- c(all_lls, tail(ll_list, n = 1))
+#   }
+#   
+#   highest_lls <- c(highest_lls, max(ll_list))
+# }
+# 
+# saveRDS(highest_lls, paste("data", storeFolder, "TM_LDA_MCMC_LL.rds", sep = "/"))
+# 
+# data1 <- readRDS("data/TM_LDA_MCMC_LL.rds")
+# data2 <- readRDS("data/bla/TM_LDA_MCMC_LL.rds")
+# data3 <- readRDS("data/bla1/TM_LDA_MCMC_LL.rds")
+# data4 <- readRDS("data/bla2/TM_LDA_MCMC_LL.rds")
+# 
+# data <- c(data1, data2, data3, data4)
+# 
+# y <- c(seq(5,100,5), seq(110,180,10), seq(200,400,50), seq(500,700,100))
+# 
+# d<-t(rbind(y, data))
+# plot(d, type="o", xlab="", ylab="", xlim=c(0,700))
 # title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
 # title(ylab = "Estimated Log Likelihood", line = 2.3, cex.lab = 1)
-
-print("Ending run.")
-print(proc.time() - timer)
+# 
+# print("Ending run.")
+# print(proc.time() - timer)

@@ -1,7 +1,23 @@
 #!/usr/bin/env Rscript
 
-# Follow this doc to install the newest R version
 # https://cran.r-project.org/bin/linux/ubuntu/README
+# http://sysads.co.uk/2014/06/install-r-base-3-1-0-ubuntu-14-04/
+
+# Remove any previous R installations
+# sudo apt-get remove r-base-core
+
+# Switch sources
+# Go to /etc/apt/sources.list
+# Add deb http://cran.rstudio.com/bin/linux/ubuntu trusty/
+
+# Add keys to system
+# gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
+# gpg -a --export E084DAB9 | sudo apt-key add -
+
+# Install R
+# sudo apt-get update
+# sudo apt-get upgrade
+# sudo apt-get install r-base
 
 # Add R/library folders to user root folder
 
@@ -17,4 +33,4 @@
 
 # Run this script, get a cup of tea this might take a while
 
-install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr"))
+install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr", "coda"))
