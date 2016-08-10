@@ -65,7 +65,7 @@ timer <- proc.time()
 
 data <- mclapply(ks, function(k) TmLDASimulation(cleanCorpus, "", k, 50/k, 0.01, burnin, iter, thin, keep, store = FALSE, multiple = TRUE), mc.cores = cores, mc.silent = TRUE)  
   
-saveRDS(data, paste("data", storeFolder, "TM_LDA_LL_FULL_FIT.rds", sep = "/"))
+saveRDS(data, paste(storeFolder, "TM_LDA_LL_FULL_FIT.rds", sep = "/"))
 #   holder <- list()
 #   
 #   for(item in data) {
