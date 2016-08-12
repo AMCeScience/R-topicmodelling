@@ -23,6 +23,8 @@ if (length(args) > 0) {
   setwd(workspace)
   
   corpus_name = args[2]
+  
+  if (file.exists(paste("originals", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("originals", corpus_name, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
@@ -39,12 +41,13 @@ if (length(args) > 0) {
   burnin = 800
   iter = 1000
   corpus_name = "clean_corpus.rds"
+  
+  if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
 }
 
 library(tm)
 library(parallel)
 
-if (file.exists(paste("data", corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste("data", corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) return
 
 library(topicmodels)
