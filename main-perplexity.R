@@ -12,7 +12,7 @@ if (length(args) > 0) {
   
   workspace = args[1]
   is <- 1 : 10
-  ks = c(3, 4, 5, 6, 7, 8, seq(10, 100, 5))
+  ks = c(5, seq(10, 100, 10), seq(150, 500, 50))
   cores = 7
   
   # Load the config
@@ -28,7 +28,7 @@ if (length(args) > 0) {
   
   workspace <- "~/workspace/R"
   is <- 1 : 2
-  ks = c(4,5)
+  ks = c(2)
   cores = 2
   
   setwd(workspace)
@@ -71,23 +71,21 @@ if (file.exists("data/split_corpus.rds")) {
 source("fit.R")
 
 perps <- data.frame(ks = ks)
-count <- 2
+count <- 1
 
 timer <- proc.time()
 
-pb <- txtProgressBar(min=0, max=length(is), style=3)
-
 for (i in is) {
+  # Make ten subsets of approx 10% of the whole set
   merge <- merge_corpus(split, i)
   
-  # Make ten subsets of approx 10% of the whole set
   dtm_train <- merge$train
   dtm_test <- DocumentTermMatrix(merge$test)
   
   # fit a bunch of models -- varying the number of topics
   # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
   # has a nice, concise overview of model selection for LDA
-  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, keep = keep, store = FALSE), mc.cores = cores, mc.silent = TRUE)
+  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, thin = thin, keep = keep, store = FALSE), mc.cores = cores, mc.silent = TRUE)
   
   # Plot the perplexity
   perps[,count] <- unlist(mclapply(models, perplexity, dtm_test, mc.cores = cores, mc.silent = TRUE))
@@ -95,9 +93,8 @@ for (i in is) {
   saveRDS(perps, gsub("__", i, "data/perplexity_incremental__.rds"))
   
   count <- count + 1
-  setTxtProgressBar(pb, i)
 }
-close(pb)
+
 print(proc.time() - timer)
 
 saveRDS(perps, "data/perplexity_complete.rds")
