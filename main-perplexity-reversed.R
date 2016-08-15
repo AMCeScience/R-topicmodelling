@@ -94,7 +94,7 @@ for (k in ks) {
     perp <- perplexity(model, dtm_test)
     
     return(perp)
-  })
+  }, mc.cores = cores, mc.silent = TRUE)
   
   saveRDS(perps, gsub("__", count, "data/perplexity_incremental__.rds"))
   
