@@ -29,8 +29,8 @@ if (length(args) > 0) {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
-  is <- 1 : 2
-  ks = c(2)
+  is <- 1
+  ks = c(2,3,4,5,6,7,8,9,10)
   cores = 2
   
   setwd(workspace)
@@ -88,7 +88,8 @@ for (i in is) {
   # fit a bunch of models -- varying the number of topics
   # section 2.4 of http://www.jstatsoft.org/v40/i13/paper
   # has a nice, concise overview of model selection for LDA
-  models <- mclapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, burnin = burnin, iter = iter, thin = thin, keep = keep, store = FALSE), mc.cores = cores, mc.silent = TRUE)
+  
+  models <- lapply(ks, function(k) TmLDASimulation(dtm_train, "", k, alpha, beta, 200, 500, 200, 50, store = FALSE))
   
   # Plot the perplexity
   perps[,count] <- unlist(mclapply(models, perplexity, dtm_test, mc.cores = cores, mc.silent = TRUE))
