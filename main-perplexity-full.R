@@ -78,8 +78,8 @@ count <- 1
 
 timer <- proc.time()
 
-for (k in ks) {
-  perps <- mclapply(is, function(i) {
+perps <- mclapply(ks, function(k) {
+  is_perp <- mclapply(is, function(i) {
     # Make ten subsets of approx 10% of the whole set
     merge <- merge_corpus(split, i)
     
@@ -96,20 +96,22 @@ for (k in ks) {
     perp <- perplexity(model, dtm_test, control, TRUE, TRUE)
     
     return(perp)
-  }, mc.cores = cores, mc.silent = FALSE)
-}
+  }, mc.cores = cores, mc.silent = TRUE)
+  
+  return(is_perp)
+}, mc.cores = cores, mc.silent = TRUE)
 
 print(proc.time() - timer)
 
 saveRDS(perps, "data/perplexity_complete.rds")
 
-perplexityPlot <- function() {
-  data <- readRDS("data/perplexity_complete.rds")
-  
-  dataMeans <- data.frame("T" = data[,1])
-  dataMeans[,"Perplexity (x1000)"] <- rowMeans(data[,2:id]) / 1000
-  
-  plot(dataMeans, xlab = "", ylab = "")
-  title(xlab = "T", line = 2.3, cex.lab = 1)
-  title(ylab = "Perplexity (x1000)", line = 2.4, cex.lab = 1)
-}
+# perplexityPlot <- function() {
+#   data <- readRDS("data/perplexity_complete.rds")
+#   
+#   dataMeans <- data.frame("T" = data[,1])
+#   dataMeans[,"Perplexity (x1000)"] <- rowMeans(data[,2:id]) / 1000
+#   
+#   plot(dataMeans, xlab = "", ylab = "")
+#   title(xlab = "T", line = 2.3, cex.lab = 1)
+#   title(ylab = "Perplexity (x1000)", line = 2.4, cex.lab = 1)
+# }
