@@ -73,13 +73,15 @@ if (file.exists("data/split_corpus.rds")) {
 
 source("fit.R")
 
-perps <- data.frame(ks = ks)
+perps <- matrix(ncol = max(is) + 1, nrow = length(ks))
+perps[,1] <- ks
+
 count <- 1
 
 timer <- proc.time()
 
 for (k in ks) {
-  perps <- mclapply(is, function(i) {
+  temp_list <- mclapply(is, function(i) {
     # Make ten subsets of approx 10% of the whole set
     merge <- merge_corpus(split, i)
     
@@ -97,6 +99,12 @@ for (k in ks) {
     
     return(perp)
   }, mc.cores = cores, mc.silent = FALSE)
+  
+  perps[count, 2:(max(is) + 1)] <- unlist(temp_list)
+  
+  saveRDS(perps, gsub("__", count, "data/perplexity_incremental__.rds"))  
+  
+  count = count + 1
 }
 
 print(proc.time() - timer)

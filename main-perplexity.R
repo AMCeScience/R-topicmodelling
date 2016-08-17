@@ -29,8 +29,8 @@ if (length(args) > 0) {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
-  is <- 1
-  ks = c(2,3,4,5,6,7,8,9,10)
+  is <- 1 : 2
+  ks = c(2,3,4,5)
   cores = 2
   
   setwd(workspace)
@@ -74,7 +74,7 @@ if (file.exists("data/split_corpus.rds")) {
 source("fit.R")
 
 perps <- data.frame(ks = ks)
-count <- 1
+count <- 2
 
 timer <- proc.time()
 
