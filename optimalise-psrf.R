@@ -24,7 +24,7 @@ if (length(args) > 0) {
   
   cores = 7
   
-  cleanCorpus <- readRDS(paste("data", RDSfilename, sep = "/"))
+  cleanCorpus <- readRDS(paste("originals", RDSfilename, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
@@ -46,10 +46,12 @@ library(coda)
 library(parallel)
 source("fit.R")
 
+timer <- proc.time()
+
 k = 250
 beta = 0.01
 alphas = c(0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3)
 
-data <- mclapply(alphas, function(alpha) TmLDASimulation(cleanCorpus, "", k, alpha, beta, burnin, iter, thin, keep, store = FALSE, multiple = TRUE), mc.cores = cores, mc.silent = TRUE)  
+data <- mclapply(alphas, function(alpha) TmLDASimulation(cleanCorpus, "", 250, 0.01, 0.01, burnin, iter, thin, keep, store = FALSE, multiple = TRUE), mc.cores = cores, mc.silent = TRUE)  
 
-saveRDS(data, paste(storeFolder, "TM_LDA_LL_ALPHA_FIT.rds", sep = "/"))
+#saveRDS(data, paste(storeFolder, "TM_LDA_LL_ALPHA_FIT.rds", sep = "/"))
