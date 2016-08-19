@@ -37,7 +37,7 @@ workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data/tests"
+folder = "data"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -122,7 +122,7 @@ overlap <- function(ids) {
   return(perc)
 }
 
-myWordcloud <- function(id) {
+myWordcloud <- function(id, name = "wordcloud.png") {
   data <- readFileId(id)
 
   dtm2list <- apply(data$dtm, 1, function(x) {
@@ -146,14 +146,14 @@ myWordcloud <- function(id) {
   library(wordcloud)
   
   pal <- brewer.pal(8,"Dark2")
-  png("wordcloud.png", width = 1280,height = 800)
-  wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  png(name, width = 1280,height = 800)
+  wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 15, max.words = 500, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
   #wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = T, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
   dev.off()
 }
 
 KLdists <- function(ids) {
-  source("KL-distance.R")
+  source("postprocessing/KL-distance.R")
   
   container <- list()
   
@@ -177,7 +177,7 @@ KLdists <- function(ids) {
 }
 
 KLColourMatrix <- function(id1, id2) {
-  source("KL-distance.R")
+  source("postprocessing/KL-distance.R")
   
   KLData <- as.matrix(KLorder(KLdistFromIds(id2, id1)))
 
@@ -188,14 +188,20 @@ KLColourMatrix <- function(id1, id2) {
             xlab = gsub("__", id1, "Model __, topics"), ylab = gsub("__", id2, "Model __, topics"),
             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1, trace = "none", key = FALSE, 
             lhei = c(0.10, 0.90), lwid = c(0.10, 0.90), margins = c(3, 3.3))
-  #dev.off()
 }
 
-relevance <- function(ids, numberOfTerms = 30) {
-  # Can also get the raw relevancy instead of saliency
-  # as.matrix(terms(LDAData, numberOfTerms))
+relevance <- function(ids, numberOfTerms = 10) {
+  source("postprocessing/relevance-calc.R")
   
-  source("relevance-calc.R")
+  for (id in ids) {
+    termRelevancyData <- relevanceCalculation(id, numberOfTerms, TRUE)
+    
+    #saveRDS(termSaliencyData, gsub("XX", id, paste(folder, "XXsaliency_terms.rds", sep = "/")))
+  }
+}
+
+saliency <- function(ids, numberOfTerms = 10) {
+  source("postprocessing/relevance-calc.R")
   timer <- proc.time()
   
   for (id in ids) {
@@ -224,7 +230,19 @@ impressionsToExcel <- function(ids) {
   }
 }
 
-calcImpression <- function(id) {
+calcImpression <- function(id, cutTopics = FALSE, cutWords = FALSE, topicSurface = 100, wordSurface = 100) {
+  source("postprocessing/phi-calculations.R")
+  source("postprocessing/theta-calculations.R")
+  
+  if (cutTopics == TRUE) {
+    theta_rels <- getRawTheta(id)
+    num_topics <- getTopics(theta_rels, topicSurface)
+  }
+  
+  if (cutWords == TRUE) {
+    num_words <- wordsPerTopic(id, wordSurface)
+  }
+  
   data <- readFileId(id, saliencyFile = TRUE)
   
   size <- length(data[,1]) # number of words
@@ -238,7 +256,6 @@ calcImpression <- function(id) {
   rels <- matrix(data = NA, nrow = length(recalcRelevance[,1]), ncol = 1)
   colCount = 1
   
-  # remove up to 30
   for (i in 1:length(recalcRelevance[,1])) {
     rels[i] = recalcRelevance[i, colCount]
     
@@ -248,8 +265,8 @@ calcImpression <- function(id) {
   }
   
   # Take the text, bind the relevancies
-  impData <- data[,c(1,2)]
-  #impData <- cbind(data[,c(1,2)], rels)
+  #impData <- data[,c(1,2)]
+  impData <- cbind(data[,c(1,2)], rels)
   
   # Split the data into chunks and put into frame
   impression <- data.frame(split(impData, impData$Category))
@@ -270,7 +287,7 @@ impressionsToCSV <- function(ids) {
 }
 
 plotSplitMatrix <- function(id1, id2, notes = TRUE) {
-  source("topic-split-matrix.R")
+  source("postprocessing/topic-split-matrix.R")
   
   model1 <- readFileId(id1, TRUE)
   model2 <- readFileId(id2, TRUE)
@@ -282,7 +299,7 @@ plotSplitMatrix <- function(id1, id2, notes = TRUE) {
 }
 
 plotOptimalSplitMatrix <- function(id1, id2, notes = TRUE) {
-  source("topic-split-matrix.R")
+  source("postprocessing/topic-split-matrix.R")
   
   model1 <- readFileId(id1, TRUE)
   model2 <- readFileId(id2, TRUE)

@@ -1,9 +1,6 @@
 salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(), 
-                       vocab = character(), term.frequency = integer(), R = 30, 
-                       lambda = 0.6, mds.method = jsPCA, cluster, 
-                       plot.opts = list(xlab = "PC1", ylab = "PC2"), 
-                       reorder.topics = TRUE,
-                       ...) {
+                       vocab = character(), R = 30, lambda = 0.6, reorder.topics = TRUE,
+                       raw = FALSE, ...) {
   # Set the values of a few summary statistics of the corpus and model:
   dp <- dim(phi)  # should be K x W
   dt <- dim(theta)  # should be D x K
@@ -23,8 +20,6 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   if (dp[2] != W) stop("Number of terms in vocabulary does 
                        not match the number of columns of phi (where each row of phi is a
                        probability distribution of terms for a given topic).")
-  if (length(term.frequency) != W) stop("Length of term.frequency 
-                                        not equal to the number of terms in the vocabulary.")
   if (any(nchar(vocab) == 0)) stop("One or more terms in the vocabulary
                                    has zero characters -- all terms must have at least one character.")
   
@@ -80,31 +75,9 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   # marginal distribution over terms (width of blue bars)
   term.proportion <- term.frequency/sum(term.frequency)
   
-  # Old code to adjust term frequencies. Deprecated for now
-  # adjust to match term frequencies exactly (get rid of rounding error)
-  #err <- as.numeric(term.frequency/colSums(term.topic.frequency))
-  # http://stackoverflow.com/questions/3643555/multiply-rows-of-matrix-by-vector
-  #term.topic.frequency <- sweep(term.topic.frequency, MARGIN=2, err, `*`)
-  
   # Most operations on phi after this point are across topics
   # R has better facilities for column-wise operations
   phi <- t(phi)
-  
-  # compute the distinctiveness and saliency of the terms:
-  # this determines the R terms that are displayed when no topic is selected
-  #topic.given.term <- phi/rowSums(phi)  # (W x K)
-  #kernel <- topic.given.term * log(sweep(topic.given.term, MARGIN=2, 
-  #                                       topic.proportion, `/`))
-  #distinctiveness <- rowSums(kernel)
-  #saliency <- term.proportion * distinctiveness
-  
-  # Order the terms for the "default" view by decreasing saliency:
-  #default.terms <- vocab[order(saliency, decreasing = TRUE)][1:R]
-  #counts <- as.integer(term.frequency[match(default.terms, vocab)])
-  #Rs <- rev(seq_len(R))
-  #default <- data.frame(Term = default.terms, logprob = Rs, loglift = Rs, 
-  #                      Freq = counts, Total = counts, Category = "Default", 
-  #                      stringsAsFactors = FALSE)
   
   topic_seq <- rep(seq_len(K), each = R)
   category <- topic_seq
@@ -114,29 +87,32 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   # Note that relevance is re-computed in the browser, so we only need
   # to send each possible term/topic combination to the browser
   find_relevance <- function(i) {
-    relevance <- i*log(phi) + (1 - i)*log(lift)
-    idx <- apply(relevance, 2, function(x) order(x, decreasing = TRUE)[seq_len(R)])
-    
-    # for matrices, we pick out elements by their row/column index
-    indices <- cbind(c(idx), topic_seq)
-    
-    data.frame(Term = vocab[idx], Category = category,
-               logprob = round(log(phi[indices]), 4),
-               loglift = round(log(lift[indices]), 4),
-               relevance = round(relevance[indices[,1],], 4),
-               stringsAsFactors = FALSE)
+    if (raw == TRUE) {
+      relevance <- log(phi)
+      idx <- apply(relevance, 2, function(x) order(x, decreasing = TRUE)[seq_len(R)])
+      
+      # for matrices, we pick out elements by their row/column index
+      indices <- cbind(c(idx), topic_seq)
+      
+      return(data.frame(Term = vocab[idx], Category = category,
+                        relevance = round(relevance[indices[,1],], 4),
+                        stringsAsFactors = FALSE, row.names = NULL))
+    } else {
+      relevance <- i*log(phi) + (1 - i)*log(lift)
+      idx <- apply(relevance, 2, function(x) order(x, decreasing = TRUE)[seq_len(R)])
+      
+      # for matrices, we pick out elements by their row/column index
+      indices <- cbind(c(idx), topic_seq)
+      
+      return(data.frame(Term = vocab[idx], Category = category,
+                 logprob = round(log(phi[indices]), 4),
+                 loglift = round(log(lift[indices]), 4),
+                 relevance = round(relevance[indices[,1],], 4),
+                 stringsAsFactors = FALSE, row.names = NULL))
+    }
   }
   
-  #lambda.seq <- seq(0, 1, by=lambda.step)
-  #lambda.seq <- lambda
-  #if (missing(cluster)) {
-    #tinfo <- lapply(as.list(lambda.seq), find_relevance)
-    tinfo <- find_relevance(lambda)
-  #} else {
-  #  tinfo <- parallel::parLapply(cluster, as.list(lambda.seq), find_relevance)
-  #}
-    #print(tinfo)
-  #tinfo <- unique(do.call("rbind", tinfo))
+  tinfo <- find_relevance(lambda)
   
   tinfo$Total <- term.frequency[match(tinfo$Term, vocab)]
   rownames(term.topic.frequency) <- seq_len(K)
@@ -146,28 +122,6 @@ salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(
   termMatrix <- apply(termMatrix, 2, function(x) { gsub('\\s+', '', x) })
   
   tinfo$Freq <- term.topic.frequency[termMatrix]
-  
-  # last, to compute the areas of the circles when a term is highlighted
-  # we must gather all unique terms that could show up (for every combination 
-  # of topic and value of lambda) and compute its distribution over topics.
-  
-  # unique terms across all topics and all values of lambda
-  #ut <- sort(unique(tinfo$Term))
-  # indices of unique terms in the vocab
-  #m <- sort(match(ut, vocab))
-  # term-topic frequency table
-  #tmp <- term.topic.frequency[, m]
-  
-  # round down infrequent term occurrences so that we can send sparse 
-  # data to the browser:
-  #r <- row(tmp)[tmp >= 0.5]
-  #c <- col(tmp)[tmp >= 0.5]
-  #dd <- data.frame(Term = vocab[m][c], Topic = r, Freq = round(tmp[cbind(r, c)]), 
-  #                 stringsAsFactors = FALSE)
-  
-  # Normalize token frequencies:
-  #dd[, "Freq"] <- dd[, "Freq"]/term.frequency[match(dd[, "Term"], vocab)]
-  #token.table <- dd[order(dd[, 1], dd[, 2]), ]
    
   return(tinfo = tinfo)
 }
