@@ -50,6 +50,7 @@ if (length(args) > 0) {
 
 print("Corpus loaded.")
 
+library(coda)
 library(parallel)
 source("fit.R")
 
@@ -90,8 +91,10 @@ for (models in data) {
   highest_lls <- c(highest_lls, highest_ll)
 }
 
+highest_frame <- data.frame("T" = ks, "ll" = highest_lls)
+
 saveRDS(store_list, "data/TM_LDA_LL.rds")
-saveRDS(highest_lls, "data/TM_LDA_HIGHEST_LL.rds")
+saveRDS(highest_frame, "data/TM_LDA_HIGHEST_LL.rds")
 
 #data1 <- unlist(readRDS("data/tests/1TM_LDA_MCMC_LL.rds")) # 5 - 100, 5
 #data2 <- unlist(readRDS("data/tests/2TM_LDA_MCMC_LL.rds")) # 150 - 500, 50
