@@ -1,15 +1,14 @@
 configLoaded <- TRUE
 
-k <- 75 # Number of topics
+k <- 10 # Number of topics
 iter <- 500 # Iterations
 burnin <- 200
 thin <- 200
 nstart <- 3
 keep <- 10
-alpha <- 0.38
+alpha <- k/50
 beta <- 0.01
 seed <- list(123234, 890, 112, 239234, 1947)
-optimal_alphas <- c(1, 0.9, 0.9, 0.85, 0.77, 0.73, 0.71, 0.69, 0.65, 0.6, 0.54, 0.51, 0.45, 0.41, 0.38, 0.31, 0.25, 0.21, 0.17, 0.13)
 
 folder = "data"
 rangeAlpha = "true"
