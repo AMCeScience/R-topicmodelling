@@ -28,7 +28,7 @@ if (length(args) > 0) {
   #alpha = as.integer(divider)/as.integer(k)
   #beta = args[6]
   
-  cleanCorpus <- readRDS(paste("data", RDSfilename, sep = "/"))
+  cleanCorpus <- readRDS(paste("originals", RDSfilename, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
@@ -50,7 +50,6 @@ if (length(args) > 0) {
 
 print("Corpus loaded.")
 
-library(coda)
 library(parallel)
 source("fit.R")
 
@@ -58,17 +57,10 @@ source("fit.R")
 print("Starting run.")
 timer <- proc.time()
 
-#store_list <- list()
-#vals <- list()
-
-#for (k in seq(5, 5, 5)) {
-
-data <- mclapply(ks, function(k) TmLDASimulation(cleanCorpus, "", k, 50/k, 0.01, burnin, iter, thin, keep, store = FALSE, multiple = TRUE), mc.cores = cores, mc.silent = TRUE)  
-
-saveRDS(data, paste(storeFolder, "TM_LDA_LL_FULL_FIT.rds", sep = "/"))
+data <- mclapply(ks, function(k) TmLDASimulation(cleanCorpus, "", k, 50/k, 0.01, burnin, iter, thin, keep, store = FALSE, multiple = TRUE), mc.cores = cores, mc.silent = TRUE)
 
 store_list <- list()
-highest_lls <- list()
+highest_lls <- c()
 
 for (models in data) {
   mcmc_list <- list()
