@@ -1,7 +1,7 @@
-extractRelevancies <- function(id, numWords) {
+extractRelevancies <- function(id, numWords, raw = TRUE) {
   source("postprocessing/relevance-calc.R")
   
-  rels <- relevanceCalculation(id, numWords, TRUE)
+  rels <- relevanceCalculation(id, numWords, raw)
   
   size <- length(rels[,1]) # number of words
   topics <- max(rels[,2]) # number of topics
@@ -29,21 +29,21 @@ extractRelevancies <- function(id, numWords) {
   impressionFilter <- impression[, -grep("Category", colnames(impression))]
 }
 
-wordsPerTopic <- function(id, goal_surface) {
+wordsPerTopic <- function(id, goal_surface, words_to_analyse = 30) {
   data <- readFileId(id)
   
   words <- c()
   
   for (i in 1:data$numberOfTopics) {
-    rels <- getSpecificTopic(id, i)
+    rels <- getSpecificTopic(id, i, words_to_analyse)
     words <- c(words, getWords(rels, goal_surface))
   }
   
   words_per_topic <- data.frame(topic = seq_len(data$numberOfTopics), numWords = words)
 }
 
-getSpecificTopic <- function(id, topic_num) {
-  rels <- extractRelevancies(id, 50)
+getSpecificTopic <- function(id, topic_num, words_to_analyse) {
+  rels <- extractRelevancies(id, words_to_analyse, FALSE)
   
   return(rels[, (topic_num * 2)])
 }
@@ -89,6 +89,39 @@ getArea <- function(normalised_rels, numWords) {
   height <- (used_rels[-1] + used_rels[-length(used_rels)]) / 2
   width <- -diff(1:length(used_rels))
   return(sum(height * width))
+}
+
+plotTopics <- function(id, topic_nums, words_to_analyse = 30) {
+  data <- readFileId(id)
+  
+  total <- data.frame(matrix(nrow = words_to_analyse))
+  
+  for (i in topic_nums[1:length(topic_nums)]) {
+    rels <- getSpecificTopic(id, i, words_to_analyse)
+    
+    total <- cbind(total, rels)
+  }
+  
+  total <- total[2:length(total)]
+  
+  plot(total[[1]], type = "l", ylab = "phi", xlab = "# words", ylim = c(min(total), max(total)))
+  
+  for (i in 2:length(total)) {
+    lines(total[[i]])
+  }
+  
+  lines(rowMeans(total), col = "red", lwd = 5)
+}
+
+plotAll <- function(id, words_to_analyse = 30) {
+  data <- readFileId(id)
+  
+  plot(getSpecificTopic(id, 1, words_to_analyse), type = "l")
+  
+  for (i in 2:data$numberOfTopics) {
+    rels <- getSpecificTopic(id, i, words_to_analyse)
+    lines(rels)
+  }
 }
 
 plotRels <- function(rels) {

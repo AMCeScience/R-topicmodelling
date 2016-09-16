@@ -40,7 +40,7 @@ if (length(args) > 0) {
   #if (!exists("configLoaded")) source("config.R")
   source("config.R")
   
-  ks = seq(5, 10, 5)
+  ks = 25
   cores = 2
   
   storeFolder <- "tests"
@@ -91,36 +91,32 @@ for (models in data) {
   highest_lls <- c(highest_lls, highest_ll)
 }
 
+# plot(c(1:500),store_list[[1]][[1]], type = "l", col = "red", xlab = "", ylab = "", ylim=c(-800000, -695000))
+# title(ylab = "Log-Likelihood", line = 2.2, cex.lab = 1)
+# title(xlab = "Iteration", line = 2.1, cex.lab = 1)
+# lines(store_list[[1]][[2]], col = "green")
+# lines(store_list[[1]][[3]], col = "blue")
+
 highest_frame <- data.frame("T" = ks, "ll" = highest_lls)
 
 saveRDS(store_list, "data/TM_LDA_LL.rds")
 saveRDS(highest_frame, "data/TM_LDA_HIGHEST_LL.rds")
 
-#data1 <- unlist(readRDS("data/tests/1TM_LDA_MCMC_LL.rds")) # 5 - 100, 5
-#data2 <- unlist(readRDS("data/tests/2TM_LDA_MCMC_LL.rds")) # 150 - 500, 50
-#data3 <- unlist(readRDS("data/tests/3TM_LDA_MCMC_LL.rds")) # 600 - 1000, 100
 
-#data <- c(data1,data2,data3)
 
-# y <- c(seq(5,100,5), seq(110,180,10), seq(200,400,50), seq(500,700,100))
-#y <- c(seq(5,100,5), seq(150,500,50), seq(600,1000,100))
+###################################################
+# PLOTTING
+###################################################
 
-# bla <- data - ((y/2) * 1308)
-# bla <- (2 * y) - (2 * data)
-# 
-# d<-t(rbind(y, bla))
-# plot(d, type="o", xlab="", ylab="", xlim=c(0,1005))
-# title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
-# title(ylab = "BIC", line = 2.3, cex.lab = 1)
-# 
-# data <- c(data4)
-# 
-# y <- c(seq(200,300,5))
-# 
-# d<-t(rbind(y, data))
-# plot(d, type="o", xlab="", ylab="", xlim=c(195,305))
-# title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
-# title(ylab = "Estimated Log Likelihood", line = 2.3, cex.lab = 1)
+number_of_words <- 7849
 
-print("Ending run.")
-print(proc.time() - timer)
+data <- readRDS("data/ll/TM_LDA_HIGHEST_LL.rds")
+
+y <- data["T"]
+
+AIC <- (-2 * data["ll"]) + (2 * (y - 1)) + (y * (number_of_words - 1))
+
+plot(cbind(y, AIC), type="o", xlab="", ylab="")
+abline(v = 25, col = "red", lty = 2)
+title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
+title(ylab = "AIC", line = 2.3, cex.lab = 1)

@@ -122,9 +122,28 @@ overlap <- function(ids) {
   return(perc)
 }
 
+wordcloudByTopics <- function(id, topics, name = "wordcloud.png") {
+  data <- readFileId(id, TRUE)
+  
+  selected <- data[data$Category %in% topics,]
+  
+  deduplicated <- aggregate(selected['Freq'], by = selected['Term'], sum)
+  
+  word_list <- deduplicated$Term
+  freqs <- deduplicated$Freq
+  
+  library(wordcloud)
+  
+  pal <- brewer.pal(8,"Dark2")
+  png(name, width = 1280,height = 800)
+  wordcloud(word_list, freqs, scale = c(5,1), max.words = 100, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  #wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = T, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  dev.off()
+}
+
 myWordcloud <- function(id, name = "wordcloud.png") {
   data <- readFileId(id)
-
+  
   dtm2list <- apply(data$dtm, 1, function(x) {
     paste(rep(names(x), x), collapse = " ")
   })
@@ -147,7 +166,7 @@ myWordcloud <- function(id, name = "wordcloud.png") {
   
   pal <- brewer.pal(8,"Dark2")
   png(name, width = 1280,height = 800)
-  wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 15, max.words = 500, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
+  wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 15, max.words = 100, random.order = F, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
   #wordcloud(d$word, d$freq, scale = c(5,1), min.freq = 10, max.words = 100, random.order = T, rot.per = 0.1, colors = pal, vfont = c("sans serif","bold"))
   dev.off()
 }
@@ -230,18 +249,9 @@ impressionsToExcel <- function(ids) {
   }
 }
 
-calcImpression <- function(id, cutTopics = FALSE, cutWords = FALSE, topicSurface = 100, wordSurface = 100) {
+calcImpression <- function(id) {
   source("postprocessing/phi-calculations.R")
   source("postprocessing/theta-calculations.R")
-  
-  if (cutTopics == TRUE) {
-    theta_rels <- getRawTheta(id)
-    num_topics <- getTopics(theta_rels, topicSurface)
-  }
-  
-  if (cutWords == TRUE) {
-    num_words <- wordsPerTopic(id, wordSurface)
-  }
   
   data <- readFileId(id, saliencyFile = TRUE)
   

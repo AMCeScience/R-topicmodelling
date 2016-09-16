@@ -4,8 +4,8 @@ relevanceCalculation <- function(id, numberOfTerms = 30, raw = FALSE) {
     
   data <- readFileId(id)
   
-  # Term frequency gave memory issues on cloud machine, calculate it here
-  # Remove a bunch of sparse terms, avoid memory problems
+  # Remove a bunch of sparse terms to avoid memory problems
+  # Sparse 0.99 removes terms which only occur in VERY few documents (probably only 1)
   sparseMatrix = removeSparseTerms(data$dtm, sparse = 0.99)
   data$termFrequency = colSums(as.matrix(sparseMatrix))
   

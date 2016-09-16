@@ -1,6 +1,6 @@
 configLoaded <- TRUE
 
-k <- 10 # Number of topics
+k <- 25 # Number of topics
 iter <- 500 # Iterations
 burnin <- 200
 thin <- 200

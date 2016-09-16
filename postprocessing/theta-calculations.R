@@ -1,9 +1,11 @@
 getRawTheta <- function(id) {
+  source("postprocessing/postprocessing.R")
+  
   data <- readFileId(id)
   
   theta <- colSums(data$posterior$theta)
   
-  topic_frame <- data.frame(category = seq_along(topic.proportion))
+  topic_frame <- data.frame(category = seq_along(theta))
   topic_frame <- cbind(topic_frame, theta = theta)
   
   ordered_frame <- topic_frame[order(topic_frame["theta"], decreasing = TRUE),]
@@ -71,7 +73,7 @@ getArea <- function(normalised_rels, numTopics) {
 plotRels <- function(rels) {
   normalised <- normalise(rels)
   
-  plot(normalised, type = "l")
+  plot(normalised, xlab = "Ordered Topics", ylab = "Normalised Theta", type = "l")
 }
 
 normalise <- function(rels) {

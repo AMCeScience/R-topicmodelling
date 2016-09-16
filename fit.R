@@ -155,6 +155,8 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, 
 }
 
 visualise <- function(runData, outputFolder) {
+  runData$termFrequency = colSums(as.matrix(runData$dtm))
+  
   # Create JSON format data
   json.data <- createJSON(phi = runData$posterior$phi, 
                           theta = runData$posterior$theta, 
