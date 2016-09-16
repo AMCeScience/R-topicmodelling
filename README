@@ -1,0 +1,2 @@
+init.R, main-clean.R, and main-fit.R are the core scripts for running TM.
+Other scripts are libraries or used for post-processing and input parameter experiments.
