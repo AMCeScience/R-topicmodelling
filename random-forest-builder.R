@@ -1,3 +1,6 @@
+#!/usr/bin/env Rscript
+# https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
+
 library(caret)
 library(pROC)
 library(randomForest)
@@ -7,8 +10,8 @@ cores <- 2
 
 setwd('~/workspace/R')
 
-#datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
-datasets <- c(5)
+datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
+#datasets <- c(5)
 
 sizeTrue <- function(x) {
   return(length(x[x == TRUE]))
@@ -81,7 +84,7 @@ runDataSet <- function(setNum) {
     
     rf <- train(Class ~ ., data = training,
                           method = "rf",
-                          ntree = 10,
+                          ntree = 1500,
                           tuneGrid = tunegrid,
                           metric = "ROC",
                           trControl = ctrl,
@@ -129,4 +132,4 @@ runDataSet <- function(setNum) {
 
 data <- mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
 
-saveRDS('data/sysrev/full_set.rds')
+saveRDS(data, 'data/sysrev/full_set.rds')
