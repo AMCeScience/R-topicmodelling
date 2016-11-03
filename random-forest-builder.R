@@ -9,32 +9,6 @@ library(pROC)
 library(randomForest)
 library(parallel)
 
-args <- commandArgs(trailingOnly = TRUE)
-
-if (length(args) > 0) {
-  print("Taking cli arguments.")
-  
-  workspace = args[1]
-  cores <- 7
-  datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
-  folds <- 1:10
-  store <- TRUE
-  
-  print(paste("Changing to workspace:", workspace))
-  
-  setwd(workspace)
-} else {
-  print("Taking preset arguments.")
-  
-  workspace <- "~/workspace/R"
-  cores <- 2
-  datasets <- c(500)
-  folds <- 1:1
-  store <- FALSE
-  
-  setwd(workspace)
-}
-
 sizeTrue <- function(x) {
   return(length(x[x == TRUE]))
 }
@@ -47,29 +21,29 @@ runDataSet <- function(setNum) {
                 2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
                 2791, 2952, 2877, 2766, 1057, 2651, 2464, 1132, 2311, 2061, 2053, 2336, 3141, 2768, 2802,
                 3183, 905, 1343, 2250, 1083, 2817, 481, 1056)
-
+  
   thetas <- data$posterior$theta  
-
+  
   # Create include/exclude factor
   y <- vector(length = length(thetas[,1]))
   y[] <- 'exclude'
   y[includes] <- 'include'
   
   y <- factor(y)
-
+  
   # Calls to select top X most important variables
   # selection <- order(-importance(rf1))[0:10]
   # input <- data.frame(X = thetas)[selection]
-
+  
   # Create data frame out of thetas
   input <- data.frame(X = thetas)
   # Append the factor
   input$Class <- y
-
-#   inTrain <- createDataPartition(y = input$Class, p = .75, list = FALSE)
-#   
-#   training <- input[inTrain,]
-#   testing <- input[-inTrain,]
+  
+  #   inTrain <- createDataPartition(y = input$Class, p = .75, list = FALSE)
+  #   
+  #   training <- input[inTrain,]
+  #   testing <- input[-inTrain,]
   
   trainFolds <- createFolds(y = input$Class, k = 10, list = FALSE)
   
@@ -78,10 +52,10 @@ runDataSet <- function(setNum) {
   for (i in folds) {
     testing <- input[trainFolds == i,]
     training <- input[trainFolds != i,]
-  
+    
     table(training$Class)
     table(testing$Class)
-  
+    
     # Count the number of includes in the training portion
     nmin <- sum(training$Class == "include")
     
@@ -130,15 +104,15 @@ runDataSet <- function(setNum) {
     FN <- sizeTrue(test_negatives & base_positives)
     
     recall <- TP / sizeTrue(base_positives) # most important, has to be close to 1
-  
+    
     accuracy <- (TP + TN) / (TP + TN + FP + FN) # not interesting
     precision <- TP / (TP + FP) # not interesting
     
     sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1 == recall
     specificity <- TN / sizeTrue(base_negatives) # not interesting
-  
+    
     F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
-  
+    
     #plot(downsampledROC, col = rgb(1, 0, 0, .5), lwd = 2)
     
     set <- list(rf = rf, rfProbs = rfProbs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
@@ -157,6 +131,34 @@ runDataSet <- function(setNum) {
   }
 }
 
-data <- runDataSet(500)
+############ INPUT ############
 
-#mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
+
+if (length(args) > 0) {
+  print("Taking cli arguments.")
+  
+  workspace = args[1]
+  cores <- 7
+  datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
+  folds <- 1:10
+  store <- TRUE
+  
+  print(paste("Changing to workspace:", workspace))
+  
+  setwd(workspace)
+  
+  mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
+} else {
+  print("Taking preset arguments.")
+  
+  workspace <- "~/workspace/R"
+  cores <- 2
+  datasets <- c(10)
+  folds <- 1:1
+  store <- FALSE
+  
+  setwd(workspace)
+  
+  data <- runDataSet(500)
+}
