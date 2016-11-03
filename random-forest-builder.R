@@ -1,17 +1,39 @@
 #!/usr/bin/env Rscript
 # https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
 
+# http://appliedpredictivemodeling.com/blog/2013/12/8/28rmc2lv96h8fw8700zm4nl50busep
+
+# https://cran.r-project.org/web/packages/caret/caret.pdf
 library(caret)
 library(pROC)
 library(randomForest)
 library(parallel)
 
-cores <- 2
+args <- commandArgs(trailingOnly = TRUE)
 
-setwd('~/workspace/R')
-
-datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
-#datasets <- c(5)
+if (length(args) > 0) {
+  print("Taking cli arguments.")
+  
+  workspace = args[1]
+  cores <- 7
+  datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
+  folds <- 1:10
+  store <- TRUE
+  
+  print(paste("Changing to workspace:", workspace))
+  
+  setwd(workspace)
+} else {
+  print("Taking preset arguments.")
+  
+  workspace <- "~/workspace/R"
+  cores <- 2
+  datasets <- c(500)
+  folds <- 1:1
+  store <- FALSE
+  
+  setwd(workspace)
+}
 
 sizeTrue <- function(x) {
   return(length(x[x == TRUE]))
@@ -44,14 +66,12 @@ runDataSet <- function(setNum) {
   # Append the factor
   input$Class <- y
 
-  #inTrain <- createDataPartition(y = input$Class, p = .75, list = FALSE)
-  
-  #training <- input[inTrain,]
-  #testing <- input[-inTrain,]
+#   inTrain <- createDataPartition(y = input$Class, p = .75, list = FALSE)
+#   
+#   training <- input[inTrain,]
+#   testing <- input[-inTrain,]
   
   trainFolds <- createFolds(y = input$Class, k = 10, list = FALSE)
-
-  folds <- 1:10
   
   valList <- list()
   
@@ -59,7 +79,8 @@ runDataSet <- function(setNum) {
     testing <- input[trainFolds == i,]
     training <- input[trainFolds != i,]
   
-    #table(training$Class)
+    table(training$Class)
+    table(testing$Class)
   
     # Count the number of includes in the training portion
     nmin <- sum(training$Class == "include")
@@ -83,13 +104,13 @@ runDataSet <- function(setNum) {
     tunegrid <- expand.grid(.mtry = mtry)
     
     rf <- train(Class ~ ., data = training,
-                          method = "rf",
-                          ntree = 1500,
-                          tuneGrid = tunegrid,
-                          metric = "ROC",
-                          trControl = ctrl,
-                          strata = training$Class,
-                          sampsize = rep(nmin, 2))
+                method = "rf",
+                ntree = 1500,
+                tuneGrid = tunegrid,
+                metric = "ROC",
+                trControl = ctrl,
+                strata = training$Class,
+                sampsize = rep(nmin, 2))
     
     rfProbs <- predict(rf, testing, type = "prob")
     ROC <- roc(response = testing$Class, 
@@ -108,12 +129,12 @@ runDataSet <- function(setNum) {
     FP <- sizeTrue(test_positives & base_negatives)
     FN <- sizeTrue(test_negatives & base_positives)
     
-    recall <- TP / sizeTrue(test_positives) # most important, has to be close to 1
+    recall <- TP / sizeTrue(base_positives) # most important, has to be close to 1
   
     accuracy <- (TP + TN) / (TP + TN + FP + FN) # not interesting
     precision <- TP / (TP + FP) # not interesting
     
-    sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1
+    sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1 == recall
     specificity <- TN / sizeTrue(base_negatives) # not interesting
   
     F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
@@ -127,9 +148,15 @@ runDataSet <- function(setNum) {
     valList[[i]] <- set
   }
   
-  saveRDS(valList, paste('data/sysrev/', setNum, '_set.rds', sep = ''))
-  
-  rm(valList)
+  if (store) {
+    saveRDS(valList, paste('data/sysrev/', setNum, '_set.rds', sep = ''))
+    
+    rm(valList)
+  } else {
+    return(valList)
+  }
 }
 
-mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
+data <- runDataSet(500)
+
+#mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
