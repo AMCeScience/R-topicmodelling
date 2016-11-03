@@ -127,9 +127,9 @@ runDataSet <- function(setNum) {
     valList[[i]] <- set
   }
   
-  return(valList)
+  saveRDS(valList, paste('data/sysrev/', setNum, '_set.rds', sep = ''))
+  
+  rm(valList)
 }
 
-data <- mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
-
-saveRDS(data, 'data/sysrev/full_set.rds')
+mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
