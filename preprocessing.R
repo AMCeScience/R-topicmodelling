@@ -28,6 +28,10 @@ removeDash <- function(document) {
   PlainTextDocument(str_replace_all(document$content, "-", " "))
 }
 
+replaceUnderscore <- function(document) {
+  PlainTextDocument(str_replace_all(document$content, "XZXZX", "_"))
+}
+
 # Removes words longer than 26 characters from the string
 removeLong <- function(document) {
   PlainTextDocument(stripWhitespace(str_replace_all(document$content, "[:alpha:]{26,}", "")))
@@ -41,36 +45,54 @@ createNGrams <- function(originalCorpus) {
   # Convert back to document list (function uses Corpus as input for interoperability)
   originalText <- as.list(data.frame(text = paste("", paste(unlist(sapply(originalCorpus, `[`, "content")), "", sep = " "), sep = " "), stringsAsFactors = F))[[1]]
   
-  # Create ngrams
-  ngram <- dfm(originalText, ngrams = numberOfGrams, verbose = FALSE)
+#   # Create ngrams
+#   ngram <-
+#     dfm(originalText, ngrams = numberOfGrams, verbose = FALSE)
+#   
+#   # Get the term counts
+#   columnCounts <- colSums(ngram)
+#   
+#   # Create list we want to remove
+#   sparseTerms <-
+#     columnCounts < 15 | stri_length(names(columnCounts)) <= 6
+#   # Remove unwanted terms
+#   cleanedTerms <- columnCounts[!sparseTerms]
+#   cleanedTerms <-
+#     cleanedTerms[!names(cleanedTerms) %in% extraStopWords]
+#   
+#   # Create list of terms without dashes (for searching purposes)
+#   noDash <- gsub("_", " ", names(cleanedTerms))
   
-  # Get the term counts
-  columnCounts <- colSums(ngram)
+  library(openxlsx)
   
-  # Create list we want to remove
-  sparseTerms <- columnCounts < 15 | stri_length(names(columnCounts)) <= 6
-  # Remove unwanted terms
-  cleanedTerms <- columnCounts[!sparseTerms]
-  cleanedTerms <- cleanedTerms[!names(cleanedTerms) %in% extraStopWords]
+  data <- read.xlsx('data/termine-data.xlsx', colNames = FALSE)
   
-  # Create list of terms without dashes (for searching purposes)
-  noDash <- gsub("_", " ", names(cleanedTerms))
+  data[,2] <- as.numeric(data[,2])
+  
+  cutoff <- 20
+  
+  cut_data <- data[data[,2] > cutoff,1]
+  
+  cut_data <- cut_data[order(-nchar(cut_data), cut_data)]
+  
+  noDash <- cut_data
+  cleanedTerms <- gsub(" ", "XZXZX", cut_data)
   
   # Store the original text in a variable
   gramReadyText <- originalText
   # For each term (or compound term) check the original text and merge any occurences by adding a _
   # Stupid paste construction to concat a space to the beginning and end of the search string to avoid merging compound terms
   for(i in 1:length(noDash)) {
-    gramReadyText <- gsub(paste("", paste(as.String(noDash[i]), "", sep = " "), sep = " "), paste("", paste(names(cleanedTerms[i]), "", sep = " "), sep = " "), gramReadyText, ignore.case = TRUE)
+    gramReadyText <- gsub(paste("", noDash[i], "", sep = " "), paste("", cleanedTerms[i], "", sep = " "), gramReadyText, ignore.case = TRUE)
   }
   
   # Convert into corpus again
   gramReadyText <- Corpus(VectorSource(gramReadyText))
   
-  result <- tm_map(gramReadyText, trimWhitespace)
+  # result <- tm_map(gramReadyText, trimWhitespace)
   
   # Returns the corpus with _ added to N-gram compound terms
-  return(result)
+  return(gramReadyText)
 }
 
 # Stem the text and stem complete the text (with most prevalent term)
@@ -119,6 +141,8 @@ removeSpecialCharacters <- function(originalCorpus) {
   result <- tm_map(result, removePunctuation)
   result <- tm_map(result, removeNumbers)
   
+  result <- tm_map(result, replaceUnderscore)
+  
   result <- tm_map(result, stripWhitespace)
   result <- tm_map(result, trimWhitespace)
   
@@ -134,6 +158,10 @@ cleanMyText <- function(originalText) {
   print("Cleaning: convert to corpus.")
   result <- Corpus(VectorSource(originalText))
   
+  # Create compound terms
+  print("Cleaning: create N-grams.")
+  result <- createNGrams(result)
+  
   # Remove special characters
   print("Cleaning: remove special characters.")
   result <- removeSpecialCharacters(result)
@@ -142,15 +170,11 @@ cleanMyText <- function(originalText) {
   print("Cleaning: remove stopwords pass 1.")
   result <- removeStopWords(result, extraStopWords)
   
-  # Create compound terms
-  print("Cleaning: create N-grams.")
-  result <- createNGrams(result)
-  
   # Stem the corpus
   print("Cleaning: stemming corpus.")
   result <- stemText(result)
   
-  # Another round after N-grams
+  # Remove stopwords after stemming
   print("Cleaning: remove stopwords pass 2.")
   result <- removeStopWords(result, extraStopWords)
   
