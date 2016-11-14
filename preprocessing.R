@@ -213,9 +213,8 @@ runPreprocessing <- function(csv_name, store = FALSE, name = "clean_corpus.rds")
   cleanCorpus <- addIDs(cleanCorpus)
   
   if (store == TRUE) {
-    # https://stackoverflow.com/questions/19967478/how-to-save-data-file-into-rdata
     print("Cleaning: store into rds file.")
-    saveRDS(cleanCorpus, paste("data", name, sep = "/"))
+    saveRDS(cleanCorpus, name)
   }
   
   return(cleanCorpus)
