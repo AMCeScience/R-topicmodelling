@@ -89,7 +89,7 @@ createNGrams <- function(originalCorpus) {
   # Convert into corpus again
   gramReadyText <- Corpus(VectorSource(gramReadyText))
   
-  result <- tm_map(gramReadyText, trimWhitespace)
+  # result <- tm_map(gramReadyText, trimWhitespace)
   
   # Returns the corpus with _ added to N-gram compound terms
   return(gramReadyText)

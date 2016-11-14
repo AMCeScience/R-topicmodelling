@@ -20,6 +20,8 @@ if (length(args) > 0) {
   
   corpus_name = args[2]
   csv_name = args[3]
+  
+  store = TRUE
 } else {
   print("Taking preset arguments.")
   
@@ -31,11 +33,13 @@ if (length(args) > 0) {
   if (!exists("configLoaded")) source("config.R")
   
   corpus_name = "clean_corpus.rds"
-  csv_name = "articles.csv"
+  csv_name = "articles_sysrev_test.csv"
+  
+  store = FALSE
 }
 
 #if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))
 if (!exists("cleanCorpus")) {
   source("preprocessing.R")
-  cleanCorpus <- runPreprocessing(csv_name, store = TRUE, corpus_name)
+  cleanCorpus <- runPreprocessing(csv_name, store = store, corpus_name)
 }
