@@ -20,12 +20,11 @@ if (length(args) > 0) {
   
   # Overwrite the defaults
   storeFolder = args[2]
-  CSVfileName = args[3]
-  k = args[4]
-  divider = args[5]
-  rangeAlpha = args[6]
+  RDSfilename = args[3]
+  ks = c(seq(5, 100, 5), seq(150, 500, 50))
+  cores = 7
   
-  cleanCorpus <- readRDS(paste("data", CSVfileName, sep = "/"))
+  cleanCorpus <- readRDS(paste("originals", RDSfilename, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
@@ -34,34 +33,25 @@ if (length(args) > 0) {
   setwd(workspace)
   
   # Load the config
-  if (!exists("configLoaded")) source("config.R")
+  #if (!exists("configLoaded")) source("config.R")
+  source("config.R")
   
-  #source("preprocessing.R")
-  #cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
+  ks = seq(5,30,1)
+  cores = 2
+  
+  storeFolder <- "tests"
+  
   cleanCorpus <- readRDS("data/clean_corpus.rds")
 }
 
 print("Corpus loaded.")
 
+library(coda)
+library(parallel)
 source("fit.R")
 
 # Start timer
 print("Starting run.")
 timer <- proc.time()
 
-if (rangeAlpha == "true") {
-  beta = 0.01
-  
-  for (alpha in (0.001 * 10^(1:4)) ) {
-    data <- TmLDASimulation(cleanCorpus, storeFolder, k, alpha, beta, iter, iter, keep)
-  }
-} else {
-  alpha = as.integer(divider)/as.integer(k)
-  
-  for (beta in (0.001 * 10^(1:4)) ) {
-    data <- TmLDASimulation(cleanCorpus, storeFolder, k, alpha, beta, iter, iter, keep)
-  }
-}
-
-print("Ending run.")
-print(proc.time() - timer)
+mclapply(ks, function(k) TmLDASimulation(cleanCorpus, storeFolder, k, 50/k, 0.01, burnin, iter, thin, keep, store = TRUE), mc.cores = cores, mc.silent = TRUE)
