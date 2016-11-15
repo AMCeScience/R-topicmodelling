@@ -32,14 +32,14 @@ if (length(args) > 0) {
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
-  corpus_name = "clean_corpus.rds"
+  corpus_name = "clean_sysrev_extended.rds"
   csv_name = "articles_sysrev_test.csv"
   
   store = FALSE
 }
 
 #if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))
-if (!exists("cleanCorpus")) {
+# if (!exists("cleanCorpus")) {
   source("preprocessing.R")
   cleanCorpus <- runPreprocessing(csv_name, store = store, corpus_name)
-}
+# }
