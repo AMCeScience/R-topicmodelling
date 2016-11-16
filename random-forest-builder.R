@@ -15,7 +15,7 @@ sizeTrue <- function(x) {
 
 runDataSet <- function(setNum) {
   # Prepare dataset
-  data <- readRDS(paste('data/sysrev/LDA_', setNum, '.rds', sep = ''))
+  data <- readRDS(paste(folder, '/LDA_', setNum, '.rds', sep = ''))
   
   includes <- c(2076, 2554, 2072, 1922, 2954, 3025, 3336, 1524, 2698, 2895, 1926, 1596, 2624, 2307, 1828, 
                 2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
@@ -123,7 +123,7 @@ runDataSet <- function(setNum) {
   }
   
   if (store) {
-    saveRDS(valList, paste('data/sysrev/', setNum, '_set.rds', sep = ''))
+    saveRDS(valList, paste(folder, '/', setNum, '_set.rds', sep = ''))
     
     rm(valList)
   } else {
@@ -139,6 +139,7 @@ if (length(args) > 0) {
   print("Taking cli arguments.")
   
   workspace = args[1]
+  folder = args[2]
   cores <- 7
   datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
   folds <- 1:10
@@ -153,6 +154,7 @@ if (length(args) > 0) {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
+  folder = 'test'
   cores <- 2
   datasets <- c(10)
   folds <- 1:1
