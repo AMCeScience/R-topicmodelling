@@ -13,6 +13,123 @@ sizeTrue <- function(x) {
   return(length(x[x == TRUE]))
 }
 
+runFullSet <- function(setNum) {
+  data <- readRDS(paste(folder, '/LDA_', setNum, '.rds', sep = ''))
+  
+  includes <- c(2076, 2554, 2072, 1922, 2954, 3025, 3336, 1524, 2698, 2895, 1926, 1596, 2624, 2307, 1828, 
+                2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
+                2791, 2952, 2877, 2766, 1057, 2651, 2464, 1132, 2311, 2061, 2053, 2336, 3141, 2768, 2802,
+                3183, 905, 1343, 2250, 1083, 2817, 481, 1056)
+    
+  includes_lyme <- c(141, 175, 279, 281, 306, 336, 338, 343, 382, 384, 531, 601, 607, 640, 665,
+                     680, 718, 729, 743, 757, 832, 860, 887, 923, 958, 1017, 1076, 1142, 1230, 1258, 1337,
+                     1380, 1399, 1400, 1472, 1532, 1589, 1603, 1668, 1699, 1709, 1710, 1765, 1768, 1828,
+                     1854, 1859, 1872, 1960, 1961, 1977, 1978, 1980, 2012, 2014, 2183, 2219, 2291, 2293,
+                     2341, 2389, 2410, 2483, 2509, 2550, 2568, 2595, 2615, 2640, 2663, 2690, 2691, 2738,
+                     2765, 2798, 2837, 2852, 2988, 2990, 2996, 3003, 3095, 3166, 3174, 3215, 3321, 3324,
+                     3457, 3571, 3583, 3605, 3608, 3614, 3616, 3635, 3647, 3648, 3655, 3657, 3684, 3786,
+                     3841, 3856, 3965)
+  
+  includes_lyme <- includes_lyme + 3514
+  
+  includes <- c(includes, includes_lyme)
+  
+  thetas <- data$posterior$theta
+  
+  # Create include/exclude factor
+  y <- vector(length = length(thetas[,1]))
+  y[] <- 'exclude'
+  y[includes] <- 'include'
+  
+  y <- factor(y)
+  
+  # Calls to select top X most important variables
+  # selection <- order(-importance(rf1))[0:10]
+  # input <- data.frame(X = thetas)[selection]
+  
+  # Create data frame out of thetas
+  input <- data.frame(X = thetas)
+  # Append the factor
+  input$Class <- y
+  
+  inTrain <- rep(0, length(thetas[,1]))
+  inTrain[1:3515] <- 1
+  
+  training <- input[inTrain == 1,]
+  testing <- input[inTrain == 0,]
+  
+  valList <- list()
+  
+  # Count the number of includes in the training portion
+  nmin <- sum(training$Class == "include")
+  
+  # Create control variable, set to cross validate
+  ctrl <- trainControl(method = "cv",
+                       classProbs = TRUE,
+                       summaryFunction = twoClassSummary)
+  
+  if (setNum < 50) {
+    mtry <- seq(1, setNum, 1)
+  } else {
+    mtry <- seq(10, setNum, 10)
+    
+    # Append setNum if not divisible by 10
+    if (setNum %% 10 != 0) {
+      mtry <- c(mtry, setNum)
+    }
+  }
+  
+  tunegrid <- expand.grid(.mtry = mtry)
+  
+  rf <- train(Class ~ ., data = training,
+              method = "rf",
+              ntree = 15,
+              tuneGrid = tunegrid,
+              metric = "ROC",
+              trControl = ctrl,
+              strata = training$Class,
+              sampsize = rep(nmin, 2))
+  
+  rfProbs <- predict(rf, testing, type = "prob")
+  ROC <- roc(response = testing$Class, 
+             predictor = rfProbs[,1],
+             levels = rev(levels(testing$Class)))
+  
+  base_positives <- testing$Class == 'include'
+  base_negatives <- testing$Class == 'exclude'
+  
+  test_positives <- rfProbs$include >= 0.5
+  test_negatives <- rfProbs$exclude > 0.5
+  
+  TP <- sizeTrue(test_positives & base_positives)
+  TN <- sizeTrue(test_negatives & base_negatives)
+  
+  FP <- sizeTrue(test_positives & base_negatives)
+  FN <- sizeTrue(test_negatives & base_positives)
+  
+  recall <- TP / sizeTrue(base_positives) # most important, has to be close to 1
+  
+  accuracy <- (TP + TN) / (TP + TN + FP + FN) # not interesting
+  precision <- TP / (TP + FP) # not interesting
+  
+  sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1 == recall
+  specificity <- TN / sizeTrue(base_negatives) # not interesting
+  
+  F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
+  
+  #plot(downsampledROC, col = rgb(1, 0, 0, .5), lwd = 2)
+  
+  valList <- list(rf = rf, rfProbs = rfProbs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
+              test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
+              accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1)
+  
+  if (store) {
+    saveRDS(valList, paste(folder, '/', setNum, '_set.rds', sep = ''))
+  } else {
+    return(valList)
+  }
+}
+
 runDataSet <- function(setNum) {
   # Prepare dataset
   data <- readRDS(paste(folder, '/LDA_', setNum, '.rds', sep = ''))
@@ -141,7 +258,8 @@ if (length(args) > 0) {
   workspace = args[1]
   folder = args[2]
   cores <- 7
-  datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
+  #datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
+  datasets <- c(20, 25, 30, 40, 50, 75, 100)
   folds <- 1:10
   store <- TRUE
   
@@ -149,12 +267,12 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  mclapply(datasets, runDataSet, mc.cores = cores, mc.silent = TRUE)
+  mclapply(datasets, runFullSet, mc.cores = cores, mc.silent = TRUE)
 } else {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
-  folder = 'test'
+  folder = 'data/complete'
   cores <- 2
   datasets <- c(10)
   folds <- 1:1
@@ -162,5 +280,5 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  data <- runDataSet(500)
+  data <- runFullSet(25)
 }
