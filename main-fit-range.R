@@ -21,8 +21,9 @@ if (length(args) > 0) {
   # Overwrite the defaults
   storeFolder = args[2]
   RDSfilename = args[3]
-  ks = c(seq(5, 100, 5), seq(150, 500, 50))
-  cores = 7
+  #ks = c(seq(5, 100, 5), seq(150, 500, 50))
+  ks = c(20, 30, 40, 50, 75, 100)
+  cores = 6
   
   cleanCorpus <- readRDS(paste("originals", RDSfilename, sep = "/"))
 } else {
