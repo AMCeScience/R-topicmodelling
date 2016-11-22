@@ -83,7 +83,7 @@ runFullSet <- function(setNum) {
   
   rf <- train(Class ~ ., data = training,
               method = "rf",
-              ntree = 15,
+              ntree = 1500,
               tuneGrid = tunegrid,
               metric = "ROC",
               trControl = ctrl,
