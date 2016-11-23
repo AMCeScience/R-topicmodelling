@@ -16,24 +16,6 @@ sizeTrue <- function(x) {
 runFullSet <- function(setNum) {
   data <- readRDS(paste(folder, '/LDA_', setNum, '.rds', sep = ''))
   
-  includes <- c(2076, 2554, 2072, 1922, 2954, 3025, 3336, 1524, 2698, 2895, 1926, 1596, 2624, 2307, 1828, 
-                2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
-                2791, 2952, 2877, 2766, 1057, 2651, 2464, 1132, 2311, 2061, 2053, 2336, 3141, 2768, 2802,
-                3183, 905, 1343, 2250, 1083, 2817, 481, 1056)
-    
-  includes_lyme <- c(141, 175, 279, 281, 306, 336, 338, 343, 382, 384, 531, 601, 607, 640, 665,
-                     680, 718, 729, 743, 757, 832, 860, 887, 923, 958, 1017, 1076, 1142, 1230, 1258, 1337,
-                     1380, 1399, 1400, 1472, 1532, 1589, 1603, 1668, 1699, 1709, 1710, 1765, 1768, 1828,
-                     1854, 1859, 1872, 1960, 1961, 1977, 1978, 1980, 2012, 2014, 2183, 2219, 2291, 2293,
-                     2341, 2389, 2410, 2483, 2509, 2550, 2568, 2595, 2615, 2640, 2663, 2690, 2691, 2738,
-                     2765, 2798, 2837, 2852, 2988, 2990, 2996, 3003, 3095, 3166, 3174, 3215, 3321, 3324,
-                     3457, 3571, 3583, 3605, 3608, 3614, 3616, 3635, 3647, 3648, 3655, 3657, 3684, 3786,
-                     3841, 3856, 3965)
-  
-  includes_lyme <- includes_lyme + 3514
-  
-  includes <- c(includes, includes_lyme)
-  
   thetas <- data$posterior$theta
   
   # Create include/exclude factor
@@ -42,10 +24,6 @@ runFullSet <- function(setNum) {
   y[includes] <- 'include'
   
   y <- factor(y)
-  
-  # Calls to select top X most important variables
-  # selection <- order(-importance(rf1))[0:10]
-  # input <- data.frame(X = thetas)[selection]
   
   # Create data frame out of thetas
   input <- data.frame(X = thetas)
@@ -134,11 +112,6 @@ runDataSet <- function(setNum) {
   # Prepare dataset
   data <- readRDS(paste(folder, '/LDA_', setNum, '.rds', sep = ''))
   
-  includes <- c(2076, 2554, 2072, 1922, 2954, 3025, 3336, 1524, 2698, 2895, 1926, 1596, 2624, 2307, 1828, 
-                2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
-                2791, 2952, 2877, 2766, 1057, 2651, 2464, 1132, 2311, 2061, 2053, 2336, 3141, 2768, 2802,
-                3183, 905, 1343, 2250, 1083, 2817, 481, 1056)
-  
   thetas <- data$posterior$theta  
   
   # Create include/exclude factor
@@ -148,19 +121,10 @@ runDataSet <- function(setNum) {
   
   y <- factor(y)
   
-  # Calls to select top X most important variables
-  # selection <- order(-importance(rf1))[0:10]
-  # input <- data.frame(X = thetas)[selection]
-  
   # Create data frame out of thetas
   input <- data.frame(X = thetas)
   # Append the factor
   input$Class <- y
-  
-  #   inTrain <- createDataPartition(y = input$Class, p = .75, list = FALSE)
-  #   
-  #   training <- input[inTrain,]
-  #   testing <- input[-inTrain,]
   
   trainFolds <- createFolds(y = input$Class, k = 10, list = FALSE)
   
@@ -230,8 +194,6 @@ runDataSet <- function(setNum) {
     
     F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
     
-    #plot(downsampledROC, col = rgb(1, 0, 0, .5), lwd = 2)
-    
     set <- list(rf = rf, rfProbs = rfProbs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
                 test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
                 accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1)
@@ -251,6 +213,24 @@ runDataSet <- function(setNum) {
 ############ INPUT ############
 
 args <- commandArgs(trailingOnly = TRUE)
+
+includes <- c(2076, 2554, 2072, 1922, 2954, 3025, 3336, 1524, 2698, 2895, 1926, 1596, 2624, 2307, 1828, 
+              2205, 2647, 1924, 1539, 2863, 2044, 1314, 1967, 1846, 3341, 2995, 2130, 2907, 2329, 2252,
+              2791, 2952, 2877, 2766, 1057, 2651, 2464, 1132, 2311, 2061, 2053, 2336, 3141, 2768, 2802,
+              3183, 905, 1343, 2250, 1083, 2817, 481, 1056)
+
+includes_lyme <- c(141, 175, 279, 281, 306, 336, 338, 343, 382, 384, 531, 601, 607, 640, 665,
+                   680, 718, 729, 743, 757, 832, 860, 887, 923, 958, 1017, 1076, 1142, 1230, 1258, 1337,
+                   1380, 1399, 1400, 1472, 1532, 1589, 1603, 1668, 1699, 1709, 1710, 1765, 1768, 1828,
+                   1854, 1859, 1872, 1960, 1961, 1977, 1978, 1980, 2012, 2014, 2183, 2219, 2291, 2293,
+                   2341, 2389, 2410, 2483, 2509, 2550, 2568, 2595, 2615, 2640, 2663, 2690, 2691, 2738,
+                   2765, 2798, 2837, 2852, 2988, 2990, 2996, 3003, 3095, 3166, 3174, 3215, 3321, 3324,
+                   3457, 3571, 3583, 3605, 3608, 3614, 3616, 3635, 3647, 3648, 3655, 3657, 3684, 3786,
+                   3841, 3856, 3965)
+
+includes_lyme <- includes_lyme + 3514
+
+includes <- c(includes, includes_lyme)
 
 if (length(args) > 0) {
   print("Taking cli arguments.")
