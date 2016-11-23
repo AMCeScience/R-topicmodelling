@@ -26,3 +26,9 @@ data/perps_old.zip
 data/split_dtm.rda
 *.csv
 *.zip
+tests/d3.v3.js
+tests/index.html
+tests/lda.css
+tests/lda.json
+tests/ldavis.js
+*.xlsx

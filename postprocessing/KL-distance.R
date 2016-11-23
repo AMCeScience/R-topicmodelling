@@ -44,7 +44,7 @@ KLdistFromRunResults <- function(run1, run2, minimialise = FALSE) {
 }
 
 KLdistFromIds <- function(id1, id2) {
-  source("postprocessing.R")
+  source("postprocessing/postprocessing.R")
   
   run1 <- readFileId(id1)
   run2 <- readFileId(id2)

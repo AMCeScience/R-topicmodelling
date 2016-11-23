@@ -37,9 +37,9 @@ if (length(args) > 0) {
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
-  storeFolder = "tests"
+  storeFolder = "complete_2"
   
-  cleanCorpus <- readRDS("data/clean_corpus.rds")
+  cleanCorpus <- readRDS("data/complete_2/complete_2.rds")
 #   source("preprocessing.R")
 #   cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
 }

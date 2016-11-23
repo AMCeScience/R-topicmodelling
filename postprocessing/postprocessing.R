@@ -37,7 +37,7 @@ workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data"
+folder = "data/complete_2"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -234,18 +234,19 @@ saliency <- function(ids, numberOfTerms = 10) {
 }
 
 impressionsToExcel <- function(ids) {
-  library(xlsx)
+ # library(xlsx)
   
   for (id in ids) {
     data <- calcImpression(id)
     
-    filename <- gsub("XX", id, paste(folder, "XXrelevancies.xlsx", sep = "/"))
+    filename <- gsub("XX", id, paste(folder, "XXrelevancies.csv", sep = "/"))
     
     if (file.exists(filename)) {
       file.remove(filename)
     }
     
-    write.xlsx(data, file = filename, sheetName = paste("sheet", id), append = TRUE)
+    #write.xlsx(data, file = filename, sheetName = paste("sheet", id), append = TRUE)
+    write.table(data, file = filename, row.names = FALSE)
   }
 }
 

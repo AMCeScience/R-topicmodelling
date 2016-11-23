@@ -32,10 +32,10 @@ if (length(args) > 0) {
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
-  corpus_name = "clean_sysrev_extended.rds"
-  csv_name = "articles_sysrev_test.csv"
+  corpus_name = "complete_2.rds"
+  csv_name = "complete.csv"
   
-  store = FALSE
+  store = TRUE
 }
 
 #if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))

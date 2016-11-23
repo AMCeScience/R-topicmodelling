@@ -40,7 +40,7 @@ if (length(args) > 0) {
   #if (!exists("configLoaded")) source("config.R")
   source("config.R")
   
-  ks = 25
+  ks = seq(5,30,1)
   cores = 2
   
   storeFolder <- "tests"
@@ -108,15 +108,34 @@ saveRDS(highest_frame, "data/TM_LDA_HIGHEST_LL.rds")
 # PLOTTING
 ###################################################
 
-number_of_words <- 7849
+par(mfrow=c(1,2))
 
-data <- readRDS("data/ll/TM_LDA_HIGHEST_LL.rds")
+number_of_words <- 17644
+
+data <- readRDS("data/sysrev/TM_LDA_HIGHEST_LL.rds")
 
 y <- data["T"]
 
-AIC <- (-2 * data["ll"]) + (2 * (y - 1)) + (y * (number_of_words - 1))
+#BIC <- (-2 * data["ll"]) + (log(1300) * (y + (y * number_of_words)))
+AIC <- -2 * data["ll"] + 2 * ((y - 1) + (y * (number_of_words - 1)))
+#AIC <- (-2*data["ll"]) + (2*((y-1) + (y * (number_of_words - 1))))
+
+cbind(data, AIC)
 
 plot(cbind(y, AIC), type="o", xlab="", ylab="")
-abline(v = 25, col = "red", lty = 2)
+abline(v = 14, col = "red", lty = 2)
+title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
+title(ylab = "AIC", line = 2.3, cex.lab = 1)
+
+data <- readRDS("data/TM_LDA_HIGHEST_LL.rds")
+
+y <- data["T"]
+
+#BIC <- (-2 * data["ll"]) + (log(1300) * (y + (y * number_of_words)))
+AIC <- -2 * data["ll"] + 2 * ((y - 1) + (y * (number_of_words - 1)))
+#AIC <- (-2*data["ll"]) + (2*((y-1) + (y * (number_of_words - 1))))
+
+plot(cbind(y, AIC), type="o", xlab="", ylab="")
+abline(v = 14, col = "red", lty = 2)
 title(xlab = "Number of Topics", line = 2.2, cex.lab = 1)
 title(ylab = "AIC", line = 2.3, cex.lab = 1)

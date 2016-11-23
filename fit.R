@@ -86,7 +86,7 @@ LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, ke
   return(runData)
 }
 
-TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE, multiple = FALSE) {
+TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE, name_template = "TM_LDA_modelfit__.rds", multiple = FALSE) {
   dtm = DocumentTermMatrix(corpus)
   
   if (multiple) {
@@ -145,7 +145,8 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, 
                  numberOfTopics = K)
   
   if (store == TRUE) {
-    saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), paste("data", folder, "TM_LDA_modelfit__.rds", sep = "/")))
+    print(gsub("KK", K, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:KK"), paste(folder, name_template, sep = "/"))));
+    saveRDS(runData, gsub("KK", K, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:KK"), paste(folder, name_template, sep = "/"))))
     
     print("TmLDASimulation data stored.")
     print(proc.time() - timer)

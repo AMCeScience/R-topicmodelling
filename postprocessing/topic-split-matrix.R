@@ -53,7 +53,7 @@ findBiggestModel <- function(model1, model2) {
 }
 
 optimaliseTopicIntersection <- function(id1, id2) {
-  source("relevance-calc.R")
+  source("postprocessing/relevance-calc.R")
   
   model1 <- readFileId(id1, TRUE)
   model2 <- readFileId(id2, TRUE)

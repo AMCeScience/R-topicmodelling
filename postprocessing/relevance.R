@@ -1,5 +1,5 @@
 salientTerms <- function(phi = matrix(), theta = matrix(), doc.length = integer(), 
-                       vocab = character(), R = 30, lambda = 0.6, reorder.topics = FALSE,
+                       vocab = character(), R = 30, lambda = 0.6, reorder.topics = TRUE,
                        raw = FALSE, ...) {
   # Set the values of a few summary statistics of the corpus and model:
   dp <- dim(phi)  # should be K x W

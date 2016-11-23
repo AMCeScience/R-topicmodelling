@@ -155,7 +155,7 @@ removeReturnsFromCorpus <- function(originalCorpus) {
   return(tm_map(originalCorpus, removeReturns))
 }
 
-cleanMyText <- function(originalText) {
+cleanMyText <- function(originalText, stem, gram) {
   # Lowercase everything
   print("Cleaning: to lower case.")
   result <- toLower(originalText)
@@ -166,9 +166,11 @@ cleanMyText <- function(originalText) {
   
   result <- removeReturnsFromCorpus(result)
   
-  # Create compound terms
-  print("Cleaning: create N-grams.")
-  result <- createNGrams(result)
+  if (gram) {
+    # Create compound terms
+    print("Cleaning: create N-grams.")
+    result <- createNGrams(result)
+  }
   
   # Remove special characters
   print("Cleaning: remove special characters.")
@@ -178,17 +180,19 @@ cleanMyText <- function(originalText) {
   print("Cleaning: remove stopwords pass 1.")
   result <- removeStopWords(result, extraStopWords)
   
-  # Stem the corpus
-  print("Cleaning: stemming corpus.")
-  result <- stemText(result)
-  
-  # Remove stopwords after stemming
-  print("Cleaning: remove stopwords pass 2.")
-  result <- removeStopWords(result, extraStopWords)
+  if (stem) {
+    # Stem the corpus
+    print("Cleaning: stemming corpus.")
+    result <- stemText(result)
+    
+    # Remove stopwords after stemming
+    print("Cleaning: remove stopwords pass 2.")
+    result <- removeStopWords(result, extraStopWords)
+  }
   
   # If any weirdly long words are left, remove them
   # print("Cleaning: remove long words.")
-  result <- removeOverlyLongWords(result)
+  # result <- removeOverlyLongWords(result)
   
   # Return as corpus
   return(result)
@@ -208,12 +212,12 @@ readCSV <- function(name) {
   return(text)
 }
 
-runPreprocessing <- function(csv_name, store = FALSE, name = "clean_corpus.rds") {
+runPreprocessing <- function(csv_name, store = FALSE, stem = TRUE, gram = TRUE, name = "clean_corpus.rds") {
   documents <- readCSV(csv_name)
   
   # Start!
   print("Starting cleaning process.")
-  cleanCorpus <- cleanMyText(documents)
+  cleanCorpus <- cleanMyText(documents, stem, gram)
   
   print("Cleaning: add back document ids.")
   cleanCorpus <- addIDs(cleanCorpus)
@@ -225,8 +229,6 @@ runPreprocessing <- function(csv_name, store = FALSE, name = "clean_corpus.rds")
   
   return(cleanCorpus)
 }
-
-# testCorpus <- runPreprocessing(CSVfileName)
 
 
 
