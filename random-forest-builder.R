@@ -143,7 +143,7 @@ runDataSet <- function(setNum, folder, store) {
                          classProbs = TRUE,
                          summaryFunction = twoClassSummary)
     
-    if (setNum < 50) {
+    if (setNum < 40) {
       mtry <- seq(1, setNum, 1)
     } else {
       mtry <- seq(10, setNum, 10)
