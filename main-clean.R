@@ -41,5 +41,5 @@ if (length(args) > 0) {
 #if (file.exists(paste(folder, corpus_name, sep = "/"))) cleanCorpus <- readRDS(paste(folder, corpus_name, sep = "/"))
 # if (!exists("cleanCorpus")) {
   source("preprocessing.R")
-  cleanCorpus <- runPreprocessing(csv_name, store = store, corpus_name)
+  cleanCorpus <- runPreprocessing(csv_name, store = store, FALSE, FALSE, corpus_name)
 # }
