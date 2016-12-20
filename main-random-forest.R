@@ -1,3 +1,9 @@
+#!/usr/bin/env Rscript
+# https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
+
+# Clear workspace
+rm(list = ls())
+
 args <- commandArgs(trailingOnly = TRUE)
 
 source("includes/contrast.R")
