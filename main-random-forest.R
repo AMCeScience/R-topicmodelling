@@ -25,12 +25,12 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  mclapply(datasets, function(set) runFullSet(set, folder, store), mc.cores = cores, mc.silent = TRUE)
+  mclapply(datasets, function(set) runDataSet(set, folder, store), mc.cores = cores, mc.silent = TRUE)
 } else {
   print("Taking preset arguments.")
   
   workspace <- "~/workspace/R"
-  folder = 'data/complete'
+  folder = 'data/contrast_all'
   cores <- 2
   datasets <- c(10)
   folds <- 1:1
@@ -38,5 +38,5 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  data <- runFullSet(25, folder, store)
+  data <- runDataSet(25, folder, store)
 }

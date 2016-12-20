@@ -31,6 +31,7 @@ runFullSet <- function(setNum, folder, store) {
   input$Class <- y
   
   inTrain <- rep(0, length(thetas[,1]))
+  # TODO: change selection
   inTrain[1:3515] <- 1
   
   training <- input[inTrain == 1,]
