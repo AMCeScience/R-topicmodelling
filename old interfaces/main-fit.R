@@ -19,14 +19,14 @@ if (length(args) > 0) {
   if (!exists("configLoaded")) source("config.R")
       
   # Overwrite the defaults
-  storeFolder = args[2]
-  CSVfileName = args[3]
+  store_folder = args[2]
+  csv_filename = args[3]
   k = args[4]
   divider = args[5]
   alpha = as.integer(divider)/as.integer(k)
   beta = args[6]
   
-  cleanCorpus <- readRDS(paste("data", CSVfileName, sep = "/"))
+  clean_corpus <- readRDS(paste("data", csv_filename, sep = "/"))
 } else {
   print("Taking preset arguments.")
   
@@ -37,11 +37,9 @@ if (length(args) > 0) {
   # Load the config
   if (!exists("configLoaded")) source("config.R")
   
-  storeFolder = "complete_2"
+  store_folder = "complete_2"
   
-  cleanCorpus <- readRDS("data/complete_2/complete_2.rds")
-#   source("preprocessing.R")
-#   cleanCorpus <- runPreprocessing(CSVfileName, store = TRUE)
+  clean_corpus <- readRDS("data/complete_2/complete_2.rds")
 }
 
 print("Corpus loaded.")
@@ -52,8 +50,8 @@ source("fit.R")
 print("Starting run.")
 timer <- proc.time()
 
-data <- TmLDASimulation(cleanCorpus, storeFolder, k, alpha, beta, burnin, iter, thin, keep)
-#data <- TmLDASimulation(cleanCorpus, folder k, alpha, beta, iter, iter, keep, thin, nstart)
+data <- TmLDASimulation(clean_corpus, store_folder, k, alpha, beta, burnin, iter, thin, keep)
+#data <- TmLDASimulation(clean_corpus, folder k, alpha, beta, iter, iter, keep, thin, nstart)
 
 print("Ending run.")
 print(proc.time() - timer)

@@ -16,11 +16,13 @@ KLdist <- function(phi1, phi2, j1, j2, W) {
 }
 
 KLdistFromRunResults <- function(run1, run2, minimialise = FALSE) {
+  commonWords <- intersect(run1$usedTerms, run2$usedTerms)
+  
   # Distinct word types
-  W = length(run1$usedTerms)
+  W = length(commonWords)
   # Posteriors
-  phi1 = run1$posterior$phi
-  phi2 = run2$posterior$phi
+  phi1 = run1$posterior$phi[,commonWords]
+  phi2 = run2$posterior$phi[,commonWords]
   # Number of topics
   Topics1 = run1$numberOfTopics
   Topics2 = run2$numberOfTopics
@@ -72,6 +74,12 @@ KLorder <- function(set) {
   return(set)
 }
 
-
-
-
+# a <- readFileId(1)
+# b <- readFileId(7)
+# 
+# words <- intersect(a$usedTerms, b$usedTerms)
+# 
+# a$posterior$phi[words]
+# 
+# c <- a$posterior$phi[,words]
+# d <- b$posterior$phi[,words]

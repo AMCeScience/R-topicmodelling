@@ -38,5 +38,5 @@ if (length(args) > 0) {
   
   setwd(workspace)
   
-  data <- runDataSet(25, folder, store)
+  data <- runDataSet(20, folder, store)
 }

@@ -37,7 +37,7 @@ workspace <- "~/workspace/R"
 
 setwd(workspace)
 
-folder = "data/complete_2"
+folder = "data/contrast_all"
 
 readFileId <- function(id, saliencyFile = FALSE) {
   patt = "TM_LDA*"
@@ -48,9 +48,10 @@ readFileId <- function(id, saliencyFile = FALSE) {
   
   #print(id)
   #print(folder)
+  #print(patt)
   
-  file <- list.files(folder, paste(id, patt, sep = ""))
-  
+  file <- list.files(path = folder, pattern = paste("^", id, patt, sep = ""))
+  #print(file)
   return(readRDS(paste(folder, file, sep = "/")))
 }
 
@@ -202,10 +203,16 @@ KLColourMatrix <- function(id1, id2) {
 
   library(gplots)
   
-  heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10), 
+#   heatmap.2(x = KLData, cellnote = round(KLData, 2), col = colorRampPalette(c("white", "black"), bias = 10), 
+#             srtCol = 0, labCol = seq(1,length(KLData[1,]),1), cexRow = 1, cexCol = 1, 
+#             xlab = gsub("__", id1, "Model __, topics"), ylab = gsub("__", id2, "Model __, topics"),
+#             Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1, trace = "none", key = FALSE, 
+#             lhei = c(0.10, 0.90), lwid = c(0.10, 0.90), margins = c(3, 3.3))
+  
+  heatmap.2(x = KLData, col = colorRampPalette(c("white", "black"), bias = 10), 
             srtCol = 0, labCol = seq(1,length(KLData[1,]),1), cexRow = 1, cexCol = 1, 
             xlab = gsub("__", id1, "Model __, topics"), ylab = gsub("__", id2, "Model __, topics"),
-            Rowv = FALSE, Colv = FALSE, dendrogram = "none", notecol = "red", notecex = 1, trace = "none", key = FALSE, 
+            Rowv = FALSE, Colv = FALSE, dendrogram = "none", trace = "none", key = FALSE, 
             lhei = c(0.10, 0.90), lwid = c(0.10, 0.90), margins = c(3, 3.3))
 }
 

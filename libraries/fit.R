@@ -2,6 +2,7 @@
 # RETURN VALUE #
 ################
 
+# System date
 # LDAData
 # usedTerms
 # termFrequency
@@ -24,7 +25,7 @@ library(tm)
 library(dplyr)
 library(stringi)
 
-LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE) {
+LDASimulation <- function(corpus, folder, k, alpha, beta, burnin, iter, thin, keep, store = TRUE) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
   # https://stackoverflow.com/questions/21148049/r-topic-modeling-lda-command-lexicalize-giving-unexpected-results
@@ -42,11 +43,10 @@ LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, ke
   control = list(alpha = alpha, delta = beta, burnin = burnin, iter = iter, thin = thin)
   
   print("LDASimulation setup done.")
-  print(proc.time() - timer)
   
   # Run LDA
   LDAData <- lda.collapsed.gibbs.sampler(documents = LDADocuments, 
-                                         K = K, 
+                                         k = k, 
                                          vocab = names(usedTerms), 
                                          num.iterations = control$iter, 
                                          alpha = control$alpha, 
@@ -55,7 +55,6 @@ LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, ke
                                          compute.log.likelihood = TRUE)
   
   print("LDASimulation run done.")
-  print(proc.time() - timer)
   
   # Document to topic distribution estimate
   # Matrix where each column contains the probability distribution over topics for 1 document (1 cell is a probability of topic x for document y)
@@ -65,7 +64,6 @@ LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, ke
   phi <- t(apply(t(LDAData$topics) + beta, 2, function(x) x/sum(x)))
   
   print("LDASimulation posteriors done.")
-  print(proc.time() - timer)
   
   runData = list(LDAData = LDAData, 
                  usedTerms = names(usedTerms), 
@@ -74,19 +72,18 @@ LDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, ke
                  phi = phi, 
                  theta = theta, 
                  control = control, 
-                 numberOfTopics = K)
+                 numberOfTopics = k)
   
   if (store == TRUE) {
-    saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", K), paste("data", folder, "TM_LDA_modelfit__.rds", sep = "/")))
+    saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", k), paste("data", folder, "TM_LDA_modelfit__.rds", sep = "/")))
     
     print("LDASimulation data stored.")
-    print(proc.time() - timer)
   }
   
   return(runData)
 }
 
-TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, keep, store = TRUE, name_template = "TM_LDA_modelfit__.rds", multiple = FALSE) {
+TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   dtm = DocumentTermMatrix(corpus)
   
   if (multiple) {
@@ -96,12 +93,10 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, 
   }
   
   print("TmLDASimulation setup done.")
-  print(proc.time() - timer)
   
-  LDAData = LDA(dtm, k = K, method = "Gibbs", control = control)
+  LDAData = LDA(dtm, k = k, method = "Gibbs", control = control)
   
   print("TmLDASimulation run done.")
-  print(proc.time() - timer)
   
   if (multiple) {
     return(LDAData)
@@ -116,7 +111,6 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, 
   phi <- posterior(LDAData)$terms %>% as.matrix
   
   print("TmLDASimulation posteriors done.")
-  print(proc.time() - timer)
   
   usedTerms <- colnames(phi)
   
@@ -127,32 +121,33 @@ TmLDASimulation <- function(corpus, folder, K, alpha, beta, burnin, iter, thin, 
   }
   
   print("TmLDASimulation tokensPerDoc done.")
-  print(proc.time() - timer)
   
   # Memory issue on cloud machine, do this locally
   #termFrequency <- colSums(as.matrix(dtm))
   
   print("TmLDASimulation termFrequency done.")
-  print(proc.time() - timer)
   
-  runData = list(LDAData = LDAData,
-                 usedTerms = usedTerms,
-                 dtm = dtm,
-                 tokensPerDoc = tokensPerDoc,
-                 posterior = list(phi = phi, theta = theta),
-                 #termFrequency = termFrequency,
-                 control = control,
-                 numberOfTopics = K)
+  runData = list(
+    date = Sys.time(),
+    LDAData = LDAData,
+    usedTerms = usedTerms,
+    dtm = dtm,
+    tokensPerDoc = tokensPerDoc,
+    posterior = list(phi = phi, theta = theta),
+    #termFrequency = termFrequency,
+    control = control,
+    numberOfTopics = k
+  )
   
-  if (store == TRUE) {
-    print(gsub("KK", K, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:KK"), paste(folder, name_template, sep = "/"))));
-    saveRDS(runData, gsub("KK", K, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:KK"), paste(folder, name_template, sep = "/"))))
+  if (fit_store == TRUE) {
+    filename <- paste(data_folder, "/", project_name, "/LDA_fit_k", k, "_a", round(alpha, 2), "_b", round(beta, 2), "_", file_version, ".rds", sep = "")
+    
+    saveRDS(runData, filename)
     
     print("TmLDASimulation data stored.")
-    print(proc.time() - timer)
   }
   
-  return(LDAData)
+  return(runData)
 }
 
 visualise <- function(runData, outputFolder) {
