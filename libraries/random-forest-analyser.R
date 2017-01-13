@@ -1,102 +1,134 @@
-#datasets <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 150, 200, 250, 300, 350, 400, 450, 500)
-datasets <- c(20, 30, 40, 50, 75, 100)
-
 FMeasure <- function(precision, recall, beta = 1) {
   return((1 + beta^2) * ((precision * recall) / ((beta^2 * precision) + recall)))
 }
 
-getData <- function(setName, folds = TRUE) {
+getData <- function(data_location, datasets, folds = TRUE) {
   x <- c()
   y <- c()
   sd <- c()
-  
+
   precision <- c()
   F1 <- c()
   reduction <- c()
-  
+
   sizeTrue <- function(x) {
     return(length(x[x == TRUE]))
   }
-  
+
   # Loop all the data sets
-  for (i in 1:length(datasets)) {
-    topic <- datasets[[i]]
-    
-    topicData <- readRDS(paste('data/', setName, '/', topic, '_set.rds', sep = ''))
-    
-    recallList <- c()
-    precisionList <- c()
-    F1List <- c()
-    reductionList <- c()
-    
+  for (dataset in datasets) {
+    topic_data <- readRDS(paste(data_location, dataset, sep = "/"))
+
+    recall_list <- c()
+    precision_list <- c()
+    F1_list <- c()
+    reduction_list <- c()
+
     # Loop all the folds
     if (folds) {
-      for (j in 1:10) {
-        recallList <- c(recallList, topicData[[j]]$recall)
-        precisionList <- c(precisionList, topicData[[j]]$precision)
-        F1List <- c(F1List, FMeasure(topicData[[j]]$precision, topicData[[j]]$recall, 3))
-        reductionList <- c(reductionList, (topicData[[j]]$TP + topicData[[j]]$FP) / (sizeTrue(topicData[[j]]$base_positives) + sizeTrue(topicData[[j]]$base_negatives)))
+      for (j in 1:length(topic_data)) {
+        recall_list <- c(recall_list, topic_data[[j]]$recall)
+        precision_list <- c(precision_list, topic_data[[j]]$precision)
+        F1_list <- c(F1_list, FMeasure(topic_data[[j]]$precision, topic_data[[j]]$recall, 3))
+        reduction_list <- c(reduction_list, (topic_data[[j]]$TP + topic_data[[j]]$FP) / (sizeTrue(topic_data[[j]]$base_positives) + sizeTrue(topic_data[[j]]$base_negatives)))
       }
-      
-      coeff_names = topicData[[1]]$rf$coefnames
+
+      coeff_names <- topic_data[[1]]$rf$coefnames
     } else {
-      recallList <- c(recallList, topicData$recall)
-      precisionList <- c(precisionList, topicData$precision)
-      F1List <- c(F1List, FMeasure(topicData$precision, topicData$recall, 3))
-      reductionList <- c(reductionList, (topicData$TP + topicData$FP) / (sizeTrue(topicData$base_positives) + sizeTrue(topicData$base_negatives)))
-      
-      coeff_names = topicData$rf$coefnames
+      recall_list <- c(recall_list, topic_data$recall)
+      precision_list <- c(precision_list, topic_data$precision)
+      F1_list <- c(F1_list, FMeasure(topic_data$precision, topic_data$recall, 3))
+      reduction_list <- c(reduction_list, (topic_data$TP + topic_data$FP) / (sizeTrue(topic_data$base_positives) + sizeTrue(topic_data$base_negatives)))
+
+      coeff_names <- topic_data$rf$coefnames
     }
-    
+
     x <- c(x, length(coeff_names))
-    y <- c(y, mean(recallList))
-    sd <- c(sd, sd(recallList))
-    precision <- c(precision, mean(precisionList))
-    F1 <- c(F1, mean(F1List))
-    reduction <- c(reduction, 1 - mean(reductionList))
+    y <- c(y, mean(recall_list))
+    sd <- c(sd, sd(recall_list))
+    precision <- c(precision, mean(precision_list))
+    F1 <- c(F1, mean(F1_list))
+    reduction <- c(reduction, 1 - mean(reduction_list))
   }
-  
+
   return(data.frame(x = x, y = y, sd = sd, precision = precision, F1 = F1, reduction = reduction))
 }
 
-dataStemmed <- getData('aspergillosis/sysrev')
-dataNotStemmed <- getData('aspergillosis/sysrev-nostemming')
-dataTermine <- getData('aspergillosis/sysrev-termine')
-dataNotStemmedOrGrammed <- getData('aspergillosis/sysrev-nostemminggrams')
-dataTermineStemmed <- getData('aspergillosis/sysrev-terminestemmed')
+plotThis <- function(data_location, file_version, x, y, sd, F1, reduction) {
+  plot_frame <- data.frame(x = x, y = y, sd = sd)
 
-dataCompleteFolds <- getData('complete-folds')
+  suppressMessages(library("Hmisc"))
 
-dataComplete <- getData('complete', FALSE)
-dataReverseComplete <- getData('complete-reversed', FALSE)
+  if (rfa_store == TRUE) {
+    png(paste(data_location, "/RF_analysis_plot_", file_version, ".png", sep = ""))
+  }
 
-dataLyme <- getData('lyme')
-
-plot_this <- function(title, x, y, sd, F1, reduction) {
-  plotFrame <- data.frame(x = x, y = y, sd = sd)
-  
-  library("Hmisc")
-  
-  with (
-    data = plotFrame,
+  with(
+    data = plot_frame,
     expr = errbar(x, y, y + sd, y - sd, add = F, pch = 1, cap = .015, xlab = '', ylab = '', ylim = c(0,1.1))
   )
-  title(main = title)
+  # title(main = "Plot")
   title(ylab = "Recall", line = 2.2, cex.lab = 1)
   title(xlab = "# Topics", line = 2.1, cex.lab = 1)
-  lines(plotFrame$x, F1, col='red')
-  lines(plotFrame$x, reduction, col='blue')
+  lines(plot_frame$x, F1, col = 'red')
+  lines(plot_frame$x, reduction, col = 'blue')
+
+  if (rfa_store == TRUE) {
+    dev.off()
+  }
 }
 
-plot_this('Aspergillosis: stemmed, grammed', dataStemmed$x, dataStemmed$y, dataStemmed$sd, dataStemmed$F1, dataStemmed$reduction)
-plot_this('Aspergillosis: not stemmed, grammed', dataNotStemmed$x, dataNotStemmed$y, dataNotStemmed$sd, dataNotStemmed$F1, dataNotStemmed$reduction)
-plot_this('Aspergillosis: not stemmed, not grammed', dataNotStemmedOrGrammed$x, dataNotStemmedOrGrammed$y, dataNotStemmedOrGrammed$sd, dataNotStemmedOrGrammed$F1, dataNotStemmedOrGrammed$reduction)
-plot_this('Aspergillosis: stemmed, termine grammed', dataTermineStemmed$x, dataTermineStemmed$y, dataTermineStemmed$sd, dataTermineStemmed$F1, dataTermineStemmed$reduction)
-plot_this('Aspergillosis: not stemmed, termine grammed', dataTermine$x, dataTermine$y, dataTermine$sd, dataTermine$F1, dataTermine$reduction)
+setupForestAnalysis <- function(data_location, file_version, folds = TRUE) {
+  # DIRECTORY TESTING
+  if (!dir.exists(data_location)) {
+    stop("Data directory does not exist")
+  }
 
-plot_this('Complete folds: not stemmed, not grammed', dataCompleteFolds$x, dataCompleteFolds$y, dataCompleteFolds$sd, dataCompleteFolds$F1, dataCompleteFolds$reduction)
+  if (rf_force && dir.exists(data_location)) {
+    print("Writing directory already exists")
 
-plot_this('Complete: not stemmed, not grammed', dataComplete$x, dataComplete$y, dataComplete$sd, dataComplete$F1, dataComplete$reduction)
-plot_this('Complete reversed: not stemmed, not grammed', dataReverseComplete$x, dataReverseComplete$y, dataReverseComplete$sd, dataReverseComplete$F1, dataReverseComplete$reduction)
+    print("OVERWRITING")
+    overwriteFiles("RF_analysis_plot", data_location, file_version)
+  }
 
-plot_this('Lyme: not stemmed, not grammed', dataLyme$x, dataLyme$y, dataLyme$sd, dataLyme$F1, dataLyme$reduction)
+  # CHECK FOR EXISTING ANALYSIS
+  existing_cf_fits <- getAllOfVersion("RF_CF", data_location, file_version)
+  existing_sf_fits <- getAllOfVersion("RF_SF", data_location, file_version)
+  existing_analysis <- getAllOfVersion("RF_analysis_plot", data_location, file_version)
+
+  if (length(existing_cf_fits) + length(existing_sf_fits) != length(existing_analysis)) {
+    overwriteFiles("RF_analysis_plot", data_location, file_version)
+
+    datasets <- c(existing_cf_fits, existing_sf_fits)
+
+    data <- getData(data_location, datasets, folds)
+
+    plotThis(data_location, file_version, data$x, data$y, data$sd, data$F1, data$reduction)
+  }
+}
+
+# dataStemmed <- getData('aspergillosis/sysrev')
+# dataNotStemmed <- getData('aspergillosis/sysrev-nostemming')
+# dataTermine <- getData('aspergillosis/sysrev-termine')
+# dataNotStemmedOrGrammed <- getData('aspergillosis/sysrev-nostemminggrams')
+# dataTermineStemmed <- getData('aspergillosis/sysrev-terminestemmed')
+#
+# dataCompleteFolds <- getData('complete-folds')
+#
+# dataComplete <- getData('complete', FALSE)
+# dataReverseComplete <- getData('complete-reversed', FALSE)
+#
+# dataLyme <- getData('lyme')
+#
+# plot_this('Aspergillosis: stemmed, grammed', dataStemmed$x, dataStemmed$y, dataStemmed$sd, dataStemmed$F1, dataStemmed$reduction)
+# plot_this('Aspergillosis: not stemmed, grammed', dataNotStemmed$x, dataNotStemmed$y, dataNotStemmed$sd, dataNotStemmed$F1, dataNotStemmed$reduction)
+# plot_this('Aspergillosis: not stemmed, not grammed', dataNotStemmedOrGrammed$x, dataNotStemmedOrGrammed$y, dataNotStemmedOrGrammed$sd, dataNotStemmedOrGrammed$F1, dataNotStemmedOrGrammed$reduction)
+# plot_this('Aspergillosis: stemmed, termine grammed', dataTermineStemmed$x, dataTermineStemmed$y, dataTermineStemmed$sd, dataTermineStemmed$F1, dataTermineStemmed$reduction)
+# plot_this('Aspergillosis: not stemmed, termine grammed', dataTermine$x, dataTermine$y, dataTermine$sd, dataTermine$F1, dataTermine$reduction)
+#
+# plot_this('Complete folds: not stemmed, not grammed', dataCompleteFolds$x, dataCompleteFolds$y, dataCompleteFolds$sd, dataCompleteFolds$F1, dataCompleteFolds$reduction)
+#
+# plot_this('Complete: not stemmed, not grammed', dataComplete$x, dataComplete$y, dataComplete$sd, dataComplete$F1, dataComplete$reduction)
+# plot_this('Complete reversed: not stemmed, not grammed', dataReverseComplete$x, dataReverseComplete$y, dataReverseComplete$sd, dataReverseComplete$F1, dataReverseComplete$reduction)
+#
+# plot_this('Lyme: not stemmed, not grammed', dataLyme$x, dataLyme$y, dataLyme$sd, dataLyme$F1, dataLyme$reduction)

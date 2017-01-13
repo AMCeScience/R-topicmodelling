@@ -2,16 +2,16 @@
 # https://stackoverflow.com/questions/18306362/run-r-script-from-command-line
 
 # CALL
-# ./cli-random-forest.R ~/workspace/R test_corp
+# ./cli-forest-analyser.R ~/workspace/R test_corp TRUE
 
 source("cli-input.R")
+source("interfaces/forest-analyser.R")
 
 if (length(args) < 2) {
   stop("Not all arguments provided.")
 }
 
 project_name <- args[2]
+folds <- as.logical(args[3])
 
-source("interfaces/random-forest.R")
-
-results <- execute(project_name, "rf_selection.R")
+results <- execute(project_name, folds)

@@ -1,13 +1,5 @@
 if (!exists("configLoaded")) source("config.R")
 
-# Load libraries
-library(tm)
-library(SnowballC)
-library(quanteda)
-library(stringi)
-library(stringr)
-library(methods)
-
 ###############################
 # TM_MAP compatible functions #
 ###############################
@@ -48,37 +40,37 @@ removeLong <- function(document) {
 createNGrams <- function(original_corpus) {
   # Convert back to document list (function uses Corpus as input for interoperability)
   original_text <- as.list(data.frame(text = paste("", paste(unlist(sapply(original_corpus, `[`, "content")), "", sep = " "), sep = " "), stringsAsFactors = F))[[1]]
-  
+
   # Create ngrams
   ngram <- dfm(original_text, ngrams = clean_grams, verbose = FALSE)
-  
+
   # Get the term counts
   column_counts <- colSums(ngram)
-  
+
   # Create list we want to remove
   sparseTerms <- column_counts < 15 | stri_length(names(column_counts)) <= 6
   # Remove unwanted terms
   cleaned_terms <- column_counts[!sparseTerms]
   cleaned_terms <- cleaned_terms[!names(cleaned_terms) %in% clean_extra_stopwords]
-  
+
   # Create list of terms without dashes (for searching purposes)
   noDash <- gsub("_", " ", names(cleaned_terms))
-  
+
 #   library(openxlsx)
-#   
+#
 #   data <- read.xlsx('data/termine-data.xlsx', colNames = FALSE)
-#   
+#
 #   data[,2] <- as.numeric(data[,2])
-#   
+#
 #   cutoff <- 20
-#   
+#
 #   cut_data <- data[data[,2] > cutoff,1]
-#   
+#
 #   cut_data <- cut_data[order(-nchar(cut_data), cut_data)]
-  
+
   # noDash <- cut_data
   # cleaned_terms <- gsub(" ", "XZXZX", cut_data)
-  
+
   # Store the original text in a variable
   gram_ready_text <- original_text
   # For each term (or compound term) check the original text and merge any occurences by adding a _
@@ -87,12 +79,12 @@ createNGrams <- function(original_corpus) {
     gram_ready_text <- gsub(paste("", paste(as.String(noDash[i]), "", sep = " "), sep = " "), paste("", paste(names(cleaned_terms[i]), "", sep = " "), sep = " "), gram_ready_text, ignore.case = TRUE)
     # gram_ready_text <- gsub(paste("", paste(noDash[i], "", sep = " "), sep = " "), paste("", paste(cleaned_terms[i], "", sep = " "), sep = " "), gram_ready_text, ignore.case = TRUE)
   }
-  
+
   # Convert into corpus again
   gram_ready_text <- Corpus(VectorSource(gram_ready_text))
-  
+
   result <- tm_map(gram_ready_text, trimWhitespace)
-  
+
   # Returns the corpus with _ added to N-gram compound terms
   return(gram_ready_text)
 }
@@ -104,10 +96,10 @@ stemText <- function(original_corpus) {
   stemmed_corpus <- tm_map(original_corpus, stemDocument)
   # Make sure there is no extra whitespace because of processing steps
   stemmed_corpus <- tm_map(stemmed_corpus, stripWhitespace)
-  
+
   # Apply the stem completion
   stem_completed_corpus <- tm_map(stemmed_corpus, stemComplete, original_corpus)
-  
+
   # Return the corpus
   return(stem_completed_corpus)
 }
@@ -117,10 +109,10 @@ stemText <- function(original_corpus) {
 removeStopWords <- function(original_corpus, extra) {
   # Remove stopwords
   result <- tm_map(original_corpus, removeWords, c(stopwords("SMART"), extra))
-  
+
   result <- tm_map(result, stripWhitespace)
   result <- tm_map(result, trimWhitespace)
-  
+
   return(result)
 }
 
@@ -128,10 +120,10 @@ removeStopWords <- function(original_corpus, extra) {
 # Uses tm corpus as input
 removeOverlyLongWords <- function(original_corpus) {
   result <- tm_map(original_corpus, removeLong)
-  
+
   result <- tm_map(result, stripWhitespace)
   result <- tm_map(result, trimWhitespace)
-  
+
   return(result)
 }
 
@@ -142,12 +134,12 @@ removeSpecialCharacters <- function(original_corpus) {
   result <- tm_map(original_corpus, removeDash)
   result <- tm_map(result, removePunctuation)
   result <- tm_map(result, removeNumbers)
-  
+
   result <- tm_map(result, replaceUnderscore)
-  
+
   result <- tm_map(result, stripWhitespace)
   result <- tm_map(result, trimWhitespace)
-  
+
   return(result)
 }
 
@@ -159,41 +151,41 @@ cleanMyText <- function(original_text, stem, gram) {
   # Lowercase everything
   print("Cleaning: to lower case.")
   result <- toLower(original_text)
-  
+
   # Convert to corpus
   print("Cleaning: convert to corpus.")
   result <- Corpus(VectorSource(result))
-  
+
   result <- removeReturnsFromCorpus(result)
-  
+
   if (gram) {
     # Create compound terms
     print("Cleaning: create N-grams.")
     result <- createNGrams(result)
   }
-  
+
   # Remove special characters
   print("Cleaning: remove special characters.")
   result <- removeSpecialCharacters(result)
-  
+
   # Remove stopwords
   print("Cleaning: remove stopwords pass 1.")
   result <- removeStopWords(result, clean_extra_stopwords)
-  
+
   if (stem) {
     # Stem the corpus
     print("Cleaning: stemming corpus.")
     result <- stemText(result)
-    
+
     # Remove stopwords after stemming
     print("Cleaning: remove stopwords pass 2.")
     result <- removeStopWords(result, clean_extra_stopwords)
   }
-  
+
   # If any weirdly long words are left, remove them
   # print("Cleaning: remove long words.")
   # result <- removeOverlyLongWords(result)
-  
+
   # Return as corpus
   return(result)
 }
@@ -202,7 +194,7 @@ addIDs <- function(corpus) {
   for (i in 1:length(corpus)) {
     corpus[[i]]$meta$id = i
   }
-  
+
   return(corpus)
 }
 
@@ -210,82 +202,92 @@ readCSV <- function(csv_location) {
   if (!file.exists(csv_location)) {
     stop("Corpus file not found")
   }
-  
+
   text <- as.matrix(read.csv(file = csv_location, header = FALSE, quote = "")[1])
-  
+
   return(text)
 }
 
 runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
+  # Load libraries
+  suppressMessages(library(tm))
+  suppressMessages(library(SnowballC))
+  suppressMessages(library(quanteda))
+  suppressMessages(library(stringi))
+  suppressMessages(library(stringr))
+  suppressMessages(library(methods))
+
   documents <- readCSV(csv_location)
-  
+
   # Start!
   print("Starting cleaning process.")
   clean_corpus <- cleanMyText(documents, stem, gram)
-  
+
   print("Cleaning: add back document ids.")
   clean_corpus <- addIDs(clean_corpus)
-  
+
   return(clean_corpus)
 }
 
 setupPreprocessing <- function(project_name, csv_name) {
-  csv_location <- paste(corpus_folder, csv_name, ".csv", sep = "/")
-  
-  corpus_location <- paste(data_folder, project_name, sep = "/")
+  data_folder <- getProjectFolder(project_name)
+
+  csv_location <- paste(corpus_folder, "/", csv_name, ".csv", sep = "")
+
   corpus_filename <- "clean_corpus_1"
-  
-  # run_version <- getLastVersion("clean_corpus", corpus_location)
-  
+
+  # run_version <- getLastVersion("clean_corpus", data_folder)
+
   # DIRECTORY TESTING
   if (!file.exists(csv_location)) {
-    stop("CSV input file not found")
+    stop(paste("CSV input file not found at:", csv_location))
   }
-  
+
   if (!dir.exists(data_folder)) {
     stop("Data directory does not exist")
   }
-  
-  if (clean_force && dir.exists(corpus_location)) {
+
+  if (dir.exists(data_folder)) {
+    corpus_filename <- paste("clean_corpus_", getLastVersion("clean_corpus", data_folder), sep = "")
+  }
+
+  if (clean_force && dir.exists(data_folder)) {
     print("Writing directory already exists")
-    
+
     if (clean_overwrite == TRUE) {
       print("OVERWRITING")
-      overwriteFiles("clean_corpus", corpus_location)
+      overwriteFiles("clean_corpus", data_folder)
     } else {
-      corpus_filename <- getNewVersion("clean_corpus", corpus_location)
+      corpus_filename <- getNewVersion("clean_corpus", data_folder)
     }
   }
-  
+
   # RETRIEVE STORED CLEANED CORPUS
-  corpus_location <- paste(corpus_location, "/", corpus_filename, ".rds", sep = "")
-  
+  corpus_location <- paste(data_folder, "/", corpus_filename, ".rds", sep = "")
+
   if (!clean_force && file.exists(corpus_location)) {
     print(paste("Reading corpus from RDS: ", corpus_location))
-    
+
     clean_corpus <- readRDS(corpus_location)
   }
-  
+
   # CLEAN NEW CORPUS
   if (!exists("clean_corpus")) {
     print(paste("Reading corpus from CSV: ", csv_location))
-    
-    source("libraries/preprocessing.R")
+
     clean_corpus <- runPreprocessing(csv_location, clean_stem, clean_gram)
-    
+
     if (clean_store == TRUE) {
       print(paste("Writing to: ", corpus_location))
-      
-      data_location <- paste(data_folder, project_name, sep = "/")
-      
-      if (!dir.exists(data_location)) {
-        dir.create(data_location)
+
+      if (!dir.exists(data_folder)) {
+        dir.create(data_folder)
       }
-      
+
       print(paste("Writing corpus to RDS: ", corpus_location))
       saveRDS(clean_corpus, corpus_location)
     }
   }
-  
+
   return(clean_corpus)
 }

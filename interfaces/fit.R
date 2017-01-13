@@ -11,10 +11,18 @@ execute <- function(project_name, ks, divider = fit_divider, beta = fit_beta) {
   
   library(parallel)
   
+#   model_fit_data <- list()
+#   
+#   for (k in ks) {
+#     model_fit_data[k] <- setupFitting(clean_corpus, project_name, file_version, k, divider/k, beta, fit_burnin, fit_iter, fit_thin, fit_keep)
+#   }
+  
   model_fit_data <- mclapply(
     ks,
-    function(k) TmLDASimulation(clean_corpus, project_name, file_version, k, divider/k, beta, fit_burnin, fit_iter, fit_thin, fit_keep),
+    function(k) setupFitting(clean_corpus, project_name, file_version, k, divider/k, beta, fit_burnin, fit_iter, fit_thin, fit_keep),
     mc.cores = parallel_cores,
     mc.silent = parallel_silent
   )
+  
+  return(model_fit_data)
 }

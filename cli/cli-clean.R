@@ -11,9 +11,9 @@ if (length(args) < 3) {
   stop("Corpus name or CSV name not provided")
 }
 
-corpus_name <- args[2]
+project_name <- args[2]
 csv_name <- args[3]
 
 source("libraries/preprocessing.R")
 
-setupPreprocessing(corpus_name, csv_name)
+setupPreprocessing(project_name, csv_name)

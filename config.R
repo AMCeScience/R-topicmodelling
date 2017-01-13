@@ -4,24 +4,27 @@ configLoaded <- TRUE
 corpus_folder <- "originals"
 data_folder <- "data"
 parallel_cores <- 2
-parallel_silent <- TRUE
+parallel_silent <- FALSE
+workflow_run_to <- "forest"
 
 # CLEAN
-clean_force <- TRUE
+clean_force <- FALSE
 clean_store <- TRUE
 clean_gram <- FALSE
 clean_stem <- FALSE
 clean_overwrite <- FALSE
 clean_grams <- 1:2
-clean_extra_stopwords <- c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database", 
-                           "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal", 
-                           "conclusionadvancement", "apa", "reserved", "rights_journal", 
+clean_extra_stopwords <- c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database",
+                           "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal",
+                           "conclusionadvancement", "apa", "reserved", "rights_journal",
                            "test", "case", "proven_probable", "perform", "result", "detect", "present", "reveal", "year",
                            "show", "report", "disseminate", "technique", "major", "increase", "include", "challenge", "total",
                            "special", "count", "significantly_higher")
 
 # FIT
+fit_force <- FALSE
 fit_k <- 25 # Number of topics
+fit_ks <- seq(2, 4, 1)
 fit_iter <- 500 # Iterations
 fit_burnin <- 200
 fit_thin <- 200
@@ -34,5 +37,8 @@ fit_seed <- list(123234, 890, 112, 239234, 1947)
 fit_store <- TRUE
 
 # RANDOM FOREST
+rf_force <- FALSE
 rf_store <- TRUE
+rf_fold <- FALSE
 rf_folds <- 1:10
+rfa_store <- TRUE
