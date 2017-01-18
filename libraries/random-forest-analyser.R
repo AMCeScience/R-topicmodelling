@@ -106,29 +106,3 @@ setupForestAnalysis <- function(data_location, file_version, folds = TRUE) {
     plotThis(data_location, file_version, data$x, data$y, data$sd, data$F1, data$reduction)
   }
 }
-
-# dataStemmed <- getData('aspergillosis/sysrev')
-# dataNotStemmed <- getData('aspergillosis/sysrev-nostemming')
-# dataTermine <- getData('aspergillosis/sysrev-termine')
-# dataNotStemmedOrGrammed <- getData('aspergillosis/sysrev-nostemminggrams')
-# dataTermineStemmed <- getData('aspergillosis/sysrev-terminestemmed')
-#
-# dataCompleteFolds <- getData('complete-folds')
-#
-# dataComplete <- getData('complete', FALSE)
-# dataReverseComplete <- getData('complete-reversed', FALSE)
-#
-# dataLyme <- getData('lyme')
-#
-# plot_this('Aspergillosis: stemmed, grammed', dataStemmed$x, dataStemmed$y, dataStemmed$sd, dataStemmed$F1, dataStemmed$reduction)
-# plot_this('Aspergillosis: not stemmed, grammed', dataNotStemmed$x, dataNotStemmed$y, dataNotStemmed$sd, dataNotStemmed$F1, dataNotStemmed$reduction)
-# plot_this('Aspergillosis: not stemmed, not grammed', dataNotStemmedOrGrammed$x, dataNotStemmedOrGrammed$y, dataNotStemmedOrGrammed$sd, dataNotStemmedOrGrammed$F1, dataNotStemmedOrGrammed$reduction)
-# plot_this('Aspergillosis: stemmed, termine grammed', dataTermineStemmed$x, dataTermineStemmed$y, dataTermineStemmed$sd, dataTermineStemmed$F1, dataTermineStemmed$reduction)
-# plot_this('Aspergillosis: not stemmed, termine grammed', dataTermine$x, dataTermine$y, dataTermine$sd, dataTermine$F1, dataTermine$reduction)
-#
-# plot_this('Complete folds: not stemmed, not grammed', dataCompleteFolds$x, dataCompleteFolds$y, dataCompleteFolds$sd, dataCompleteFolds$F1, dataCompleteFolds$reduction)
-#
-# plot_this('Complete: not stemmed, not grammed', dataComplete$x, dataComplete$y, dataComplete$sd, dataComplete$F1, dataComplete$reduction)
-# plot_this('Complete reversed: not stemmed, not grammed', dataReverseComplete$x, dataReverseComplete$y, dataReverseComplete$sd, dataReverseComplete$F1, dataReverseComplete$reduction)
-#
-# plot_this('Lyme: not stemmed, not grammed', dataLyme$x, dataLyme$y, dataLyme$sd, dataLyme$F1, dataLyme$reduction)
