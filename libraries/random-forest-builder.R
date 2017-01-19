@@ -53,7 +53,7 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
     val_list[[i]] <- getMetrics(rf, testing)
   }
 
-  return(results)
+  return(val_list)
 }
 
 trainForest <- function(training, set_num) {
