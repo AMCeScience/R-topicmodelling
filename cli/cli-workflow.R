@@ -31,8 +31,6 @@ if (workflow_run_to == "cleaning") {
 
 # Overwrite the defaults
 #fit_ks <- seq(2, 4, 1)
-fit_divider <- 50
-fit_beta <- 0.01
 
 project_location <- getProjectFolder(project_name)
 file_version <- getLastVersion("clean_corpus", project_location)
@@ -41,12 +39,20 @@ source("interfaces/fit.R")
 
 library(parallel)
 
-datasets <- mclapply(
-  fit_ks,
-  function(k) setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
-  mc.cores = parallel_cores,
-  mc.silent = parallel_silent
-)
+if (fit_parallel) {
+  datasets <- mclapply(
+    fit_ks,
+    function(k) setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
+    mc.cores = parallel_cores,
+    mc.silent = parallel_silent
+  )
+} else {
+  datasets <- list()
+
+  for (k in ks) {
+    datasets[k] <- setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)
+  }
+}
 
 if (workflow_run_to == "fitting") {
   stop()
@@ -57,7 +63,6 @@ if (workflow_run_to == "fitting") {
 source("libraries/random-forest-builder.R")
 
 selection_file <- "rf_selection.R"
-#training_selection <- c(24, 10, 26, 11, 1, 22, 18, 15, 12, 25, 7, 2, 19)
 
 # Load 'includes' variable
 source(paste(project_location, selection_file, sep = "/"))
@@ -68,7 +73,15 @@ runSet <- function(dataset) {
   return(results)
 }
 
-results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
+if (rf_parallel) {
+  results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
+} else {
+  results <- list()
+
+  for (dataset in datasets) {
+    results[dataset] <- runSet(dataset)
+  }
+}
 
 # RANDOM FOREST ANALYSER --------------------------------
 

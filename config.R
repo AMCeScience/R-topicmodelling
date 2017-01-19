@@ -44,3 +44,5 @@ rf_fold <- FALSE
 rf_folds <- 1:10
 rfa_store <- TRUE
 rf_parallel <- TRUE
+
+rfa_store <- TRUE
