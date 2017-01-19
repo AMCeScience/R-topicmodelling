@@ -30,7 +30,7 @@ if (workflow_run_to == "cleaning") {
 # FITTING -----------------------------------------------
 
 # Overwrite the defaults
-fit_ks <- seq(2, 4, 1)
+#fit_ks <- seq(2, 4, 1)
 fit_divider <- 50
 fit_beta <- 0.01
 
@@ -57,7 +57,7 @@ if (workflow_run_to == "fitting") {
 source("libraries/random-forest-builder.R")
 
 selection_file <- "rf_selection.R"
-training_selection <- c(24, 10, 26, 11, 1, 22, 18, 15, 12, 25, 7, 2, 19)
+#training_selection <- c(24, 10, 26, 11, 1, 22, 18, 15, 12, 25, 7, 2, 19)
 
 # Load 'includes' variable
 source(paste(project_location, selection_file, sep = "/"))

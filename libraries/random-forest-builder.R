@@ -21,18 +21,12 @@ singleFoldForest <- function(data, includes, training_selection, datasets_locati
   testing <- input[inTrain == 0,]
 
   # Train forest
-  rf_probs <- trainForest(training, testing, set_num)
+  rf <- trainForest(training, set_num)
 
   # Get output metrics
-  results <- getMetrics(rf_probs, testing)
+  results <- getMetrics(rf, testing)
 
-  if (rf_store) {
-    saveRDS(results, paste(datasets_location, "/RF_SF_fit_k", set_num, "_", file_version, ".rds", sep = ""))
-
-    rm(results)
-  } else {
-    return(results)
-  }
+  return(results)
 }
 
 crossFoldForest <- function(data, includes, datasets_location, file_version, set_num) {
@@ -53,22 +47,16 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
     training <- input[trainFolds != i,]
 
     # Train forest
-    rf_probs <- trainForest(training, testing, set_num)
+    rf <- trainForest(training, set_num)
 
     # Store output metrics into list
-    val_list[[i]] <- getMetrics(rf_probs, testing)
+    val_list[[i]] <- getMetrics(rf, testing)
   }
 
-  if (rf_store) {
-    saveRDS(val_list, paste(datasets_location, "/RF_CF_fit_k", set_num, "_", file_version, ".rds", sep = ""))
-
-    rm(val_list)
-  } else {
-    return(val_list)
-  }
+  return(results)
 }
 
-trainForest <- function(training, testing, set_num) {
+trainForest <- function(training, set_num) {
   # Count the number of includes in the training portion
   nmin <- sum(training$Class == "include")
 
@@ -90,7 +78,7 @@ trainForest <- function(training, testing, set_num) {
               strata = training$Class,
               sampsize = rep(nmin, 2))
 
-  return(predict(rf, testing, type = "prob"))
+  return(rf)
 }
 
 setupForest <- function(dataset, includes, data_location, file_version, folds = FALSE, training_selection = FALSE) {
@@ -129,6 +117,14 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
       fit_data <- crossFoldForest(dataset, includes, data_location, file_version, dataset$numberOfTopics)
     } else {
       fit_data <- singleFoldForest(dataset, includes, training_selection, data_location, file_version, dataset$numberOfTopics)
+    }
+
+    if (rf_store) {
+      file_location = paste(data_location, "/", file_pattern, "_fit_k", dataset$numberOfTopics, "_", file_version, ".rds", sep = "")
+
+      print(paste("Writing forest fit to RDS: ", file_location, sep = ""))
+
+      saveRDS(fit_data, file_location)
     }
   }
 
@@ -174,7 +170,9 @@ getMetricsForFile <- function(project_name, file_version, set_num, fold_type = "
   return(readRDS(paste(project_folder, file, sep = "/")))
 }
 
-getMetrics <- function(rf_probs, test_set) {
+getMetrics <- function(rf, test_set) {
+  rf_probs <- predict(rf, test_set, type = "prob")
+
   ROC <- roc(response = test_set$Class,
              predictor = rf_probs[,1],
              levels = rev(levels(test_set$Class)))

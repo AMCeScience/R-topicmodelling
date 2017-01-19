@@ -17,7 +17,9 @@ getData <- function(data_location, datasets, folds = TRUE) {
 
   # Loop all the data sets
   for (dataset in datasets) {
-    topic_data <- readRDS(paste(data_location, dataset, sep = "/"))
+    dataset_location = paste(data_location, dataset, sep = "/")
+
+    topic_data <- readRDS(dataset_location)
 
     recall_list <- c()
     precision_list <- c()

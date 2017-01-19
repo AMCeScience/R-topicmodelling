@@ -35,6 +35,7 @@ fit_alpha <- fit_k / fit_divider
 fit_beta <- 0.01
 fit_seed <- list(123234, 890, 112, 239234, 1947)
 fit_store <- TRUE
+fit_parallel <- TRUE
 
 # RANDOM FOREST
 rf_force <- FALSE
@@ -42,3 +43,4 @@ rf_store <- TRUE
 rf_fold <- FALSE
 rf_folds <- 1:10
 rfa_store <- TRUE
+rf_parallel <- TRUE

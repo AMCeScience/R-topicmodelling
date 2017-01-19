@@ -20,9 +20,15 @@ execute <- function(project_name, selection_file, folds = TRUE, file_version = F
     return(results)
   }
 
-  library(parallel)
+  if (rf_parallel) {
+    library(parallel)
 
-  results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
+    results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
+  } else {
+    for (dataset in datasets) {
+      runSet(dataset)
+    }
+  }
 
   return(results)
 }
