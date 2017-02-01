@@ -16,6 +16,9 @@ if (length(args) < 3) {
 project_name <- args[2]
 csv_name <- args[3]
 
+# project_name <- "contrast/batch1"
+# csv_name <- "complete"
+
 # OVERWRITE CONFIG DEFAULTS
 clean_force <- FALSE
 
@@ -63,12 +66,9 @@ if (workflow_run_to == "fitting") {
 
 source("libraries/random-forest-builder.R")
 
-selection_file <- "rf_selection.R"
-
-# Load 'includes' variable
-source(paste(project_location, selection_file, sep = "/"))
-
 runSet <- function(dataset) {
+  includes <- sample(seq(1, length(dataset$posterior$theta[,1]), 1), 1400, replace = TRUE)
+
   results <- setupForest(dataset, includes, project_location, file_version, rf_fold, training_selection)
 
   return(results)

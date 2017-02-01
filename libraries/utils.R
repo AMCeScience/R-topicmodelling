@@ -7,7 +7,7 @@ getProjectFolder <- function(project_name) {
 }
 
 getAllOfVersion <- function(file_pattern, folder, version) {
-  patt <- paste(file_pattern, ".*_", version, ".rds", sep = "")
+  patt <- paste("^", file_pattern, ".*_", version, ".rds", sep = "")
 
   files <- list.files(path = folder, pattern = patt)
 
