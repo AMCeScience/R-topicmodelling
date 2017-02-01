@@ -33,6 +33,6 @@
 
 # Run this script, get a cup of tea this might take a while
 
-list.of.packages <- c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr", "coda", "Hmisc")
+list.of.packages <- c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr", "coda", "Hmisc", "caret")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if (length(new.packages)) install.packages(new.packages, dependencies = TRUE, quiet = TRUE)

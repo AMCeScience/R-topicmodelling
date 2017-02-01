@@ -33,12 +33,16 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
   thetas <- data$posterior$theta
 
   # Create include/exclude list
+  print("Formatting inputs")
   input <- formatInput(thetas, includes)
 
   # Create training folds
+  print("Creating folds")
   trainFolds <- createFolds(y = input$Class, k = length(rf_folds), list = FALSE)
 
   val_list <- list()
+
+  print("Starting forest folds")
 
   # Fit folds
   for (i in rf_folds) {
@@ -57,6 +61,8 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
 }
 
 trainForest <- function(training, set_num) {
+  print("Training forest")
+
   # Count the number of includes in the training portion
   nmin <- sum(training$Class == "include")
 
@@ -114,8 +120,12 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
   # FIT NEW MODEL
   if (!exists("fit_data")) {
     if (folds == TRUE) {
+      print("Fitting a new CROSS FOLD random forest")
+
       fit_data <- crossFoldForest(dataset, includes, data_location, file_version, dataset$numberOfTopics)
     } else {
+      print("Fitting a new SINGLE random forest")
+
       fit_data <- singleFoldForest(dataset, includes, training_selection, data_location, file_version, dataset$numberOfTopics)
     }
 
