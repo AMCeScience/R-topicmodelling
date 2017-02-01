@@ -29,9 +29,10 @@
 # Uncomment default repo setting, set with default CRAN repo: http://cran.us.r-project.org
 # https://stackoverflow.com/questions/11488174/how-to-select-a-cran-mirror-in-r
 
-# Install the following packages for topicmodels to work: apt-get install libgsl0-dev, apt-get install libgmp3-dev, apt-get install libmpfr4, apt-get install libmpfr-dev
-# apt-get install libssl-dev, apt-get install libcurl4-openssl-dev
+# Install the following packages for topicmodels to work: apt-get install libgsl0-dev libgmp3-dev libmpfr4 libmpfr-dev libssl-dev libcurl4-openssl-dev
 
 # Run this script, get a cup of tea this might take a while
 
-install.packages(c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr", "coda"))
+list.of.packages <- c("tm", "SnowballC", "quanteda", "stringi", "lda", "topicmodels", "LDAvis", "dplyr", "Rmpfr", "stringr", "coda", "Hmisc")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if (length(new.packages)) install.packages(new.packages, dependencies = TRUE, quiet = TRUE)
