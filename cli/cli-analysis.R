@@ -22,6 +22,7 @@ files <- getAllOfVersion("RF_CF", project_folder, version)
 
 indiceList <- function() {
   complete_indices_list <- c()
+  complete_imp_average_list <- c()
 
   for (file in files) {
     data <- readRDS(paste(project_folder, file, sep = "/"))
@@ -29,30 +30,32 @@ indiceList <- function() {
     k <- gsub("RF_CF_fit_k([0-9]*)_[0-9]*.rds", "\\1", file)
 
     top_indices_list <- list()
-    # var_imp_list <- c()
 
     for (fold in 1:length(data)) {
       imp <- varImp(data[[fold]]$rf)$importance
 
       imp_values <- imp[order(imp, decreasing = TRUE),]
 
-      total_auc <- trapz(1:length(imp_values), imp_values)
-      number_of_indices <- 0
+      # total_auc <- trapz(1:length(imp_values), imp_values)
+      # number_of_indices <- 0
 
-      for (i in 2:10) {
-        partial_auc <- trapz(1:i, imp_values[1:i])
-
-        if (partial_auc <= total_auc * auc_proportion) {
-          number_of_indices <- i
-        }
-      }
+      # for (i in 2:10) {
+      #   partial_auc <- trapz(1:i, imp_values[1:i])
+      #
+      #   if (partial_auc <= total_auc * auc_proportion) {
+      #     number_of_indices <- i
+      #   }
+      # }
 
       top_indices <- which(imp >= sort(imp[1:nrow(imp),], decreasing = TRUE)[number_topics])
       # top_indices <- which(imp >= sort(imp[1:nrow(imp),], decreasing = TRUE)[number_of_indices])
 
       if (fold > 1) {
         lines(imp_values)
+        imp_average[[fold]] <- imp_values
       } else {
+        imp_average <- data.frame(imp_values)
+
         png(paste(project_folder, "/var_imp_runoff_k", k, ".png", sep = ""))
         plot(imp_values, type = "l")
       }
@@ -60,9 +63,16 @@ indiceList <- function() {
       top_indices_list <- c(top_indices_list, list(top_indices))
     }
 
+    average <- c()
+
+    for (i in 1:length(imp_average[,1])) {
+      average[[i]] <- mean(as.numeric(imp_average[i,]))
+    }
+
     complete_indices_list <- c(complete_indices_list, list(top_indices_list))
 
     saveRDS(top_indices_list, paste(project_folder, "/top_indices_k", k, ".rds", sep = ""))
+    saveRDS(average, paste(project_folder, "/average_importance_k", k, ".rds", sep = ""))
   }
 
   return(complete_indices_list)
@@ -70,11 +80,15 @@ indiceList <- function() {
 
 writeToExcel <- function(indices_list) {
   library(openxlsx)
+  library(wordcloud)
+  library(tm)
   source("postprocessing/relevance-calc.R")
 
   files <- getAllOfVersion("LDA_fit", project_folder, version)
 
   count <- 1
+
+  words <- c()
 
   for (file in files) {
     indices <- indices_list[[count]][[1]]
@@ -100,6 +114,8 @@ writeToExcel <- function(indices_list) {
       first_index <- last_index - 1
       addStyle(wb, "data", createStyle(fgFill = "#A0A000"), 1:30, first_index)
       addStyle(wb, "data", createStyle(fgFill = "#A0A000"), 1:30, last_index)
+
+      words <- c(words, data[[first_index]])
     }
 
     # Write Excel object to file
@@ -107,6 +123,18 @@ writeToExcel <- function(indices_list) {
 
     count <- count + 1
   }
+
+  saveRDS(words, paste(project_folder, "words.rds", sep = "/"))
+
+  # corpus <- Corpus(VectorSource(words))
+  # tdm <- TermDocumentMatrix(corpus)
+  #
+  # m <- as.matrix(tdm)
+  # v <- sort(rowSums(m), decreasing = TRUE)
+  # d <- data.frame(word = names(v), freq = v)
+  #
+  # png(paste(project_folder, "wordcloud.png", sep = "/"), width = 1280, height = 800)
+  # wordcloud(d$word, d$freq, scale = c(8,.3), min.freq = 2, max.words = 100, random.order = TRUE, rot.per = .15, vfont = c("sans serif","plain"))
 }
 
 calcRelevancies <- function(data) {

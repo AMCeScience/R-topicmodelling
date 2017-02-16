@@ -4,9 +4,9 @@ FMeasure <- function(precision, recall, beta = 1) {
 
 getData <- function(data_location, datasets, folds = TRUE) {
   x <- c()
-  y <- c()
   sd <- c()
 
+  recall <- c()
   precision <- c()
   F1 <- c()
   reduction <- c()
@@ -46,18 +46,21 @@ getData <- function(data_location, datasets, folds = TRUE) {
     }
 
     x <- c(x, length(coeff_names))
-    y <- c(y, mean(recall_list))
-    sd <- c(sd, sd(recall_list))
+    sd <- c(sd, sd(F1_list))
+    recall <- c(recall, mean(recall_list))
     precision <- c(precision, mean(precision_list))
     F1 <- c(F1, mean(F1_list))
     reduction <- c(reduction, 1 - mean(reduction_list))
   }
 
-  return(data.frame(x = x, y = y, sd = sd, precision = precision, F1 = F1, reduction = reduction))
+  saveRDS(data.frame(x = x, sd = sd, recall = recall, precision = precision, F1 = F1, reduction = reduction), paste(data_location, "F1_list.rds", sep = "/"))
+
+  return(data.frame(x = x, sd = sd, recall = recall, precision = precision, F1 = F1, reduction = reduction))
 }
 
-plotThis <- function(data_location, file_version, x, y, sd, F1, precision) {
+plotThis <- function(data_location, file_version, x, y, sd, ...) {
   plot_frame <- data.frame(x = x, y = y, sd = sd)
+  other_data <- list(...)
 
   suppressMessages(library("Hmisc"))
 
@@ -70,10 +73,14 @@ plotThis <- function(data_location, file_version, x, y, sd, F1, precision) {
     expr = errbar(x, y, y + sd, y - sd, add = F, pch = 1, cap = .015, xlab = '', ylab = '', ylim = c(0,1.1))
   )
   # title(main = "Plot")
-  title(ylab = "Recall", line = 2.2, cex.lab = 1)
+  title(ylab = "F1 Score", line = 2.2, cex.lab = 1)
   title(xlab = "# Topics", line = 2.1, cex.lab = 1)
-  lines(plot_frame$x, F1, col = 'red')
-  lines(plot_frame$x, precision, col = 'blue')
+
+  for (item in other_data) {
+    points(plot_frame$x, item)
+  }
+  # points(plot_frame$x, F1, col = 'red')
+  # points(plot_frame$x, precision, col = 'blue')
 
   if (rfa_store == TRUE) {
     dev.off()
@@ -84,7 +91,7 @@ prepareData <- function(data_location, datasets, folds = TRUE) {
   for (file in datasets) {
     data <- readRDS(paste(data_location, file, sep = "/"))
 
-    if (folds == TRUE) {
+    if (folds) {
       for (i in 1:length(data)) {
         data[[i]]$names <- data[[i]]$rf$coefnames
         data[[i]]$rf <- NULL
@@ -126,15 +133,20 @@ setupForestAnalysis <- function(data_location, file_version, folds = TRUE) {
 
     prepareData(data_location, existing_cf_fits, folds)
     prepareData(data_location, existing_sf_fits, folds)
-  }
 
-  if (length(existing_cf_minified) + length(existing_sf_minified) != length(existing_analysis)) {
-    overwriteFiles("RF_analysis_plot", data_location, file_version)
+    cf_minified <- getAllOfVersion("small_RF_CF", data_location, file_version)
+    sf_minified <- getAllOfVersion("small_RF_SF", data_location, file_version)
 
+    datasets <- c(cf_minified, sf_minified)
+  } else {
     datasets <- c(existing_cf_minified, existing_sf_minified)
-
-    data <- getData(data_location, datasets, folds)
-
-    plotThis(data_location, file_version, data$x, data$y, data$sd, data$F1, data$precision)
   }
+
+  if (length(existing_analysis) > 0) {
+    overwriteFiles("RF_analysis_plot", data_location, file_version)
+  }
+
+  data <- getData(data_location, datasets, folds)
+
+  plotThis(data_location, file_version, data$x, data$F1, data$sd)
 }

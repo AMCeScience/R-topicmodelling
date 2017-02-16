@@ -7,7 +7,7 @@
 source("cli-input.R")
 source("interfaces/forest-analyser.R")
 
-if (length(args) < 2) {
+if (length(args) < 3) {
   stop("Not all arguments provided.")
 }
 
