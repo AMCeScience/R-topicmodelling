@@ -29,7 +29,10 @@
 # Uncomment default repo setting, set with default CRAN repo: http://cran.us.r-project.org
 # https://stackoverflow.com/questions/11488174/how-to-select-a-cran-mirror-in-r
 
-# Install the following packages for topicmodels to work: apt-get install libgsl0-dev libgmp3-dev libmpfr4 libmpfr-dev libssl-dev libcurl4-openssl-dev
+# Go to /usr/local/lib/R/
+# Make site-library writable: chmod o+w site-library
+
+# Install the following packages for topicmodels to work: apt-get install build-essential gfortran libblas-dev liblapack-dev libgsl0-dev libgmp3-dev libmpfr4 libmpfr-dev libssl-dev libcurl4-openssl-dev
 
 # Run this script, get a cup of tea this might take a while
 

@@ -6,11 +6,11 @@ if (!exists("configLoaded")) source("config.R")
 
 # Removes the whitespace from beginning and end of document content
 trimWhitespace <- function(document) {
-  PlainTextDocument(trimws(document$content))
+  PlainTextDocument(trimws(document))
 }
 
 removeReturns <- function(document) {
-  PlainTextDocument(str_replace_all(document$content, "\n", " "))
+  PlainTextDocument(str_replace_all(document, "\n", " "))
 }
 
 # Stem completes document
@@ -21,16 +21,16 @@ stemComplete <- function(document, dict) {
 
 # Removes dashes between words
 removeDash <- function(document) {
-  PlainTextDocument(str_replace_all(document$content, "-", " "))
+  PlainTextDocument(str_replace_all(document, "-", " "))
 }
 
 replaceUnderscore <- function(document) {
-  PlainTextDocument(str_replace_all(document$content, "XZXZX", "_"))
+  PlainTextDocument(str_replace_all(document, "XZXZX", "_"))
 }
 
 # Removes words longer than 26 characters from the string
 removeLong <- function(document) {
-  PlainTextDocument(stripWhitespace(str_replace_all(document$content, "[:alpha:]{26,}", "")))
+  PlainTextDocument(stripWhitespace(str_replace_all(document, "[:alpha:]{26,}", "")))
 }
 
 ###############################
@@ -150,7 +150,7 @@ removeReturnsFromCorpus <- function(original_corpus) {
 cleanMyText <- function(original_text, stem, gram) {
   # Lowercase everything
   print("Cleaning: to lower case.")
-  result <- toLower(original_text)
+  result <- char_tolower(original_text)
 
   # Convert to corpus
   print("Cleaning: convert to corpus.")
