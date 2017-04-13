@@ -50,8 +50,8 @@ if (fit_parallel) {
 } else {
   datasets <- list()
 
-  for (k in ks) {
-    datasets[k] <- setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)
+  for (k in fit_ks) {
+    datasets <- append(datasets, list(setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
   }
 }
 
@@ -80,7 +80,7 @@ if (rf_parallel) {
   results <- list()
 
   for (dataset in datasets) {
-    results[dataset] <- runSet(dataset)
+    results <- append(results, list(runSet(dataset)))
   }
 }
 
@@ -89,3 +89,9 @@ if (rf_parallel) {
 source("libraries/random-forest-analyser.R")
 
 results <- setupForestAnalysis(project_location, file_version, rf_fold)
+
+# ANALYSIS -------------------------------
+
+#TODO
+
+#source("libraries/")

@@ -83,7 +83,7 @@ createNGrams <- function(original_corpus) {
   # Convert into corpus again
   gram_ready_text <- Corpus(VectorSource(gram_ready_text))
 
-  result <- tm_map(gram_ready_text, trimWhitespace)
+  result <- tm_map(gram_ready_text, content_transformer(trimWhitespace))
 
   # Returns the corpus with _ added to N-gram compound terms
   return(gram_ready_text)
@@ -93,12 +93,12 @@ createNGrams <- function(original_corpus) {
 # Uses tm corpus as input
 stemText <- function(original_corpus) {
   # Stem the document
-  stemmed_corpus <- tm_map(original_corpus, stemDocument)
+  stemmed_corpus <- tm_map(original_corpus, content_transformer(stemDocument))
   # Make sure there is no extra whitespace because of processing steps
-  stemmed_corpus <- tm_map(stemmed_corpus, stripWhitespace)
+  stemmed_corpus <- tm_map(stemmed_corpus, content_transformer(stripWhitespace))
 
   # Apply the stem completion
-  stem_completed_corpus <- tm_map(stemmed_corpus, stemComplete, original_corpus)
+  stem_completed_corpus <- tm_map(stemmed_corpus, content_transformer(stemComplete), original_corpus)
 
   # Return the corpus
   return(stem_completed_corpus)
@@ -108,10 +108,10 @@ stemText <- function(original_corpus) {
 # Uses tm corpus as input
 removeStopWords <- function(original_corpus, extra) {
   # Remove stopwords
-  result <- tm_map(original_corpus, removeWords, c(stopwords("SMART"), extra))
+  result <- tm_map(original_corpus, content_transformer(removeWords), c(stopwords("SMART"), extra))
 
-  result <- tm_map(result, stripWhitespace)
-  result <- tm_map(result, trimWhitespace)
+  result <- tm_map(result, content_transformer(stripWhitespace))
+  result <- tm_map(result, content_transformer(trimWhitespace))
 
   return(result)
 }
@@ -119,10 +119,10 @@ removeStopWords <- function(original_corpus, extra) {
 # Remove words that are weirdly long (e.g. > 30 letters, while max. size in English is approx. 26)
 # Uses tm corpus as input
 removeOverlyLongWords <- function(original_corpus) {
-  result <- tm_map(original_corpus, removeLong)
+  result <- tm_map(original_corpus, content_transformer(removeLong))
 
-  result <- tm_map(result, stripWhitespace)
-  result <- tm_map(result, trimWhitespace)
+  result <- tm_map(result, content_transformer(stripWhitespace))
+  result <- tm_map(result, content_transformer(trimWhitespace))
 
   return(result)
 }
@@ -131,20 +131,20 @@ removeOverlyLongWords <- function(original_corpus) {
 # Uses tm corpus as input
 removeSpecialCharacters <- function(original_corpus) {
   # Remove dash (-), punctuation, and numbers
-  result <- tm_map(original_corpus, removeDash)
-  result <- tm_map(result, removePunctuation)
-  result <- tm_map(result, removeNumbers)
+  result <- tm_map(original_corpus, content_transformer(removeDash))
+  result <- tm_map(result, content_transformer(removePunctuation))
+  result <- tm_map(result, content_transformer(removeNumbers))
 
-  result <- tm_map(result, replaceUnderscore)
+  result <- tm_map(result, content_transformer(replaceUnderscore))
 
-  result <- tm_map(result, stripWhitespace)
-  result <- tm_map(result, trimWhitespace)
+  result <- tm_map(result, content_transformer(stripWhitespace))
+  result <- tm_map(result, content_transformer(trimWhitespace))
 
   return(result)
 }
 
 removeReturnsFromCorpus <- function(original_corpus) {
-  return(tm_map(original_corpus, removeReturns))
+  tm_map(original_corpus, content_transformer(removeReturns))
 }
 
 cleanMyText <- function(original_text, stem, gram) {
@@ -154,7 +154,7 @@ cleanMyText <- function(original_text, stem, gram) {
 
   # Convert to corpus
   print("Cleaning: convert to corpus.")
-  result <- Corpus(VectorSource(result))
+  result <- VCorpus(VectorSource(result))
 
   result <- removeReturnsFromCorpus(result)
 

@@ -39,7 +39,7 @@ LDASimulation <- function(corpus, folder, k, alpha, beta, burnin, iter, thin, ke
 
   # Run LDA
   LDAData <- lda.collapsed.gibbs.sampler(documents = LDADocuments,
-                                         k = k,
+                                         K = k,
                                          vocab = names(usedTerms),
                                          num.iterations = control$iter,
                                          alpha = control$alpha,
