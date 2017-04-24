@@ -42,28 +42,7 @@ library(tm)
 
 dtm <- DocumentTermMatrix(clean_corpus)
 
-minimized_dtm <- removeSparseTerms(dtm, sparse = 0.99)
-
-library(parallel)
-
-if (fit_parallel) {
-  datasets <- mclapply(
-    fit_ks,
-    function(k) setupFitting(minimized_dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
-    mc.cores = parallel_cores,
-    mc.silent = parallel_silent
-  )
-} else {
-  datasets <- list()
-
-  for (k in fit_ks) {
-    datasets <- append(datasets, list(setupFitting(minimized_dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
-  }
-}
-
-if (workflow_run_to == "fitting") {
-  stop()
-}
+minimized_dtm <- removeSparseTerms(dtm, sparse = 0.5)
 
 # RANDOM FOREST -----------------------------------------
 
@@ -74,21 +53,7 @@ selection_file <- "rf_selection.R"
 # Load 'includes' variable
 source(paste(project_location, selection_file, sep = "/"))
 
-runSet <- function(dataset) {
-  results <- setupForest(dataset, includes, project_location, file_version, rf_fold, training_selection)
-
-  return(results)
-}
-
-if (rf_parallel) {
-  results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
-} else {
-  results <- list()
-
-  for (dataset in datasets) {
-    results <- append(results, list(runSet(dataset)))
-  }
-}
+result <- setupForest(minimized_dtm, includes, project_location, file_version, rf_fold, training_selection)
 
 # RANDOM FOREST ANALYSER --------------------------------
 

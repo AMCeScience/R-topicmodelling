@@ -6,7 +6,7 @@ suppressMessages(library(pROC))
 suppressMessages(library(randomForest))
 source("libraries/utils.R")
 
-singleFoldForest <- function(data, includes, training_selection, datasets_location, file_version, set_num) {
+singleFoldForest <- function(data, includes, training_selection, datasets_location, file_version) {
   thetas <- data$posterior$theta
 
   # Create include/exclude list
@@ -21,7 +21,7 @@ singleFoldForest <- function(data, includes, training_selection, datasets_locati
   testing <- input[inTrain == 0,]
 
   # Train forest
-  rf <- trainForest(training, set_num)
+  rf <- trainForest(training)
 
   # Get output metrics
   results <- getMetrics(rf, testing)
@@ -29,8 +29,8 @@ singleFoldForest <- function(data, includes, training_selection, datasets_locati
   return(results)
 }
 
-crossFoldForest <- function(data, includes, datasets_location, file_version, set_num) {
-  thetas <- data$posterior$theta
+crossFoldForest <- function(data, includes, datasets_location, file_version) {
+  thetas <- data
 
   # Create include/exclude list
   print("Formatting inputs")
@@ -51,7 +51,7 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
     training <- input[trainFolds != i,]
 
     # Train forest
-    rf <- trainForest(training, set_num)
+    rf <- trainForest(training)
 
     # Store output metrics into list
     val_list[[i]] <- getMetrics(rf, testing)
@@ -60,7 +60,7 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
   return(val_list)
 }
 
-trainForest <- function(training, set_num) {
+trainForest <- function(training) {
   print("Training forest")
 
   # Count the number of includes in the training portion
@@ -71,7 +71,7 @@ trainForest <- function(training, set_num) {
                        classProbs = TRUE,
                        summaryFunction = twoClassSummary)
 
-  mtry <- getMtry(set_num)
+  mtry <- getMtry(length(training[1,]) - 1)
 
   tunegrid <- expand.grid(.mtry = mtry)
 
@@ -103,11 +103,11 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
     print("Writing directory already exists")
 
     print("OVERWRITING")
-    overwriteFiles(paste(file_pattern, "_fit_k", dataset$numberOfTopics, sep = ""), data_location, file_version)
+    overwriteFiles(file_pattern, data_location, file_version)
   }
 
   # RETRIEVE STORED MODEL FIT
-  fit_location <- getAllOfVersion(paste(file_pattern, "_fit_k", dataset$numberOfTopics, sep = ""), data_location, file_version)
+  fit_location <- getAllOfVersion(file_pattern, data_location, file_version)
 
   if (length(fit_location) > 0) {
     fit_location <- paste(data_location, fit_location, sep = "/")
@@ -122,15 +122,15 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
     if (folds == TRUE) {
       print("Fitting a new CROSS FOLD random forest")
 
-      fit_data <- crossFoldForest(dataset, includes, data_location, file_version, dataset$numberOfTopics)
+      fit_data <- crossFoldForest(dataset, includes, data_location, file_version)
     } else {
       print("Fitting a new SINGLE random forest")
 
-      fit_data <- singleFoldForest(dataset, includes, training_selection, data_location, file_version, dataset$numberOfTopics)
+      fit_data <- singleFoldForest(dataset, includes, training_selection, data_location, file_version)
     }
 
     if (rf_store) {
-      file_location = paste(data_location, "/", file_pattern, "_fit_k", dataset$numberOfTopics, "_", file_version, ".rds", sep = "")
+      file_location = paste(data_location, "/", file_pattern, "_", file_version, ".rds", sep = "")
 
       print(paste("Writing forest fit to RDS: ", file_location, sep = ""))
 
@@ -142,15 +142,16 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
 }
 
 formatInput <- function(thetas, includes) {
+  # Create data frame out of thetas
+  input <- as.data.frame(as.matrix(thetas))
+
   # Create include/exclude factor
-  y <- vector(length = length(thetas[,1]))
+  y <- vector(length = length(input[,1]))
   y[] <- 'exclude'
   y[includes] <- 'include'
 
   y <- factor(y)
 
-  # Create data frame out of thetas
-  input <- data.frame(X = thetas)
   # Append the factor
   input$Class <- y
 
@@ -158,15 +159,11 @@ formatInput <- function(thetas, includes) {
 }
 
 getMtry <- function(set_num) {
-  if (set_num < 50) {
-    mtry <- seq(1, set_num, 1)
-  } else {
-    mtry <- seq(10, set_num, 10)
+  mtry <- seq(1, set_num, 100)
 
-    # Append set_num if not divisible by 10
-    if (set_num %% 10 != 0) {
-      mtry <- c(mtry, set_num)
-    }
+  # Append set_num if not divisible by 100
+  if (set_num %% 100 != 0) {
+    mtry <- c(mtry, set_num)
   }
 
   return(mtry)
