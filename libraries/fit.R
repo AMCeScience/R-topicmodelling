@@ -76,9 +76,7 @@ LDASimulation <- function(corpus, folder, k, alpha, beta, burnin, iter, thin, ke
   return(runData)
 }
 
-TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
-  dtm = DocumentTermMatrix(corpus)
-
+TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   if (multiple) {
     control = list(alpha = alpha, delta = beta, iter = iter, keep = 1, nstart = 3, best = FALSE, seed = list(123234, 890, 112))
   } else {
@@ -107,11 +105,7 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
 
   usedTerms <- colnames(phi)
 
-  tokensPerDoc <- vector()
-
-  for (i in 1:length(corpus)) {
-    tokensPerDoc <- c(tokensPerDoc, stri_count(paste(corpus[[i]]$content, collapse = ' '), regex = '\\S+'))
-  }
+  tokensPerDoc <- rowSums(as.matrix(dtm))
 
   print("TmLDASimulation tokensPerDoc done.")
 
@@ -143,7 +137,7 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
   return(runData)
 }
 
-setupFitting <- function(clean_corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
+setupFitting <- function(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   suppressMessages(library(lda))
   suppressMessages(library(LDAvis))
   suppressMessages(library(topicmodels))
@@ -178,7 +172,7 @@ setupFitting <- function(clean_corpus, project_name, file_version, k, alpha, bet
 
   # FIT NEW MODEL
   if (!exists("fit_data")) {
-    fit_data <- TmLDASimulation(clean_corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
+    fit_data <- TmLDASimulation(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
   }
 
   return(fit_data)
