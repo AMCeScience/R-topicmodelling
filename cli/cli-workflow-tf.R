@@ -42,7 +42,7 @@ library(tm)
 
 dtm <- DocumentTermMatrix(clean_corpus)
 
-minimized_dtm <- removeSparseTerms(dtm, sparse = 0.5)
+minimized_dtm <- removeSparseTerms(dtm, sparse = 0.99)
 
 # RANDOM FOREST -----------------------------------------
 
