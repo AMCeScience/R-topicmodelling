@@ -28,6 +28,9 @@ library(tm)
 
 dtm <- DocumentTermMatrix(clean_corpus)
 
+ui = unique(dtm$i)
+dtm = dtm[ui,]
+
 if (workflow_run_to == "cleaning") {
   stop()
 }
