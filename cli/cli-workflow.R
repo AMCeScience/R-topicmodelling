@@ -24,6 +24,8 @@ source("libraries/preprocessing.R")
 # Pre-process the corpus
 clean_corpus <- setupPreprocessing(project_name, csv_name)
 
+library(tm)
+
 dtm <- DocumentTermMatrix(clean_corpus)
 
 if (workflow_run_to == "cleaning") {
