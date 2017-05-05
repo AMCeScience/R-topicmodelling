@@ -18,7 +18,7 @@
 #   keep
 # numberOfTopics
 
-LDASimulation <- function(corpus, folder, k, alpha, beta, burnin, iter, thin, keep, store = TRUE) {
+LDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   # Convert tm corpus to document list, both LDA and topicmodels methods should use the TM to parse the original text
   # This line below can then convert for the LDA while topicmodels uses the TermDocumentMatrix
   # https://stackoverflow.com/questions/21148049/r-topic-modeling-lda-command-lexicalize-giving-unexpected-results
@@ -68,7 +68,9 @@ LDASimulation <- function(corpus, folder, k, alpha, beta, burnin, iter, thin, ke
                  numberOfTopics = k)
 
   if (store == TRUE) {
-    saveRDS(runData, gsub("__", paste(Sys.time(), "alpha:", control$alpha, "beta:", control$delta, "topics:", k), paste("data", folder, "TM_LDA_modelfit__.rds", sep = "/")))
+    filename <- paste(data_folder, "/", project_name, "/LDA_fit_k", k, "_a", round(alpha, 2), "_b", round(beta, 2), "_", file_version, ".rds", sep = "")
+
+    saveRDS(runData, filename)
 
     print("LDASimulation data stored.")
   }
@@ -137,7 +139,7 @@ TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, bur
   return(runData)
 }
 
-setupFitting <- function(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
+setupFitting <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   suppressMessages(library(lda))
   suppressMessages(library(LDAvis))
   suppressMessages(library(topicmodels))
@@ -172,7 +174,7 @@ setupFitting <- function(dtm, project_name, file_version, k, alpha, beta, burnin
 
   # FIT NEW MODEL
   if (!exists("fit_data")) {
-    fit_data <- TmLDASimulation(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
+    fit_data <- LDASimulation(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
   }
 
   return(fit_data)
