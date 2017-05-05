@@ -14,7 +14,7 @@ clean_gram <- FALSE
 clean_stem <- FALSE
 clean_overwrite <- TRUE
 clean_grams <- 1:2
-clean_extra_stopwords <- c() #c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database",
+clean_extra_stopwords <- c("big", "data", "big_data") #c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database",
                           # "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal",
                           # "conclusionadvancement", "apa", "reserved", "rights_journal",
                           # "test", "case", "proven_probable", "perform", "result", "detect", "present", "reveal", "year",
@@ -35,13 +35,13 @@ fit_alpha <- fit_k / fit_divider
 fit_beta <- 0.01
 fit_seed <- list(123234, 890, 112, 239234, 1947)
 fit_store <- TRUE
-fit_parallel <- FALSE
+fit_parallel <- TRUE
 
 # RANDOM FOREST
 rf_force <- TRUE
 rf_store <- TRUE
 rf_fold <- TRUE
 rf_folds <- 1:2
-rf_parallel <- FALSE
+rf_parallel <- TRUE
 
 rfa_store <- TRUE
