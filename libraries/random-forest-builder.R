@@ -4,6 +4,7 @@
 suppressMessages(library(caret))
 suppressMessages(library(pROC))
 suppressMessages(library(randomForest))
+suppressMessages(library(doMC))
 source("libraries/utils.R")
 
 singleFoldForest <- function(data, includes, training_selection, datasets_location, file_version) {
@@ -74,6 +75,11 @@ trainForest <- function(training) {
   mtry <- getMtry(length(training[1,]) - 1)
 
   tunegrid <- expand.grid(.mtry = mtry)
+
+  # Parallel RFs
+  if (rf_parallel) {
+    registerDoMC(cores = parallel_cores)
+  }
 
   rf <- train(Class ~ ., data = training,
               method = "rf",
