@@ -35,7 +35,7 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
 
   # Create include/exclude list
   print("Formatting inputs")
-  input <- formatInput(thetas, includes)
+  input <- formatInput(thetas, includes, datasets_location)
 
   # Create training folds
   print("Creating folds")
@@ -81,7 +81,7 @@ trainForest <- function(training, set_num) {
     registerDoMC(cores = parallel_cores)
   }
 
-  rf <- train(Class ~ ., data = training,
+  rf <- train(Class ~ . - PID - reviewID, data = training,
               method = "rf",
               ntree = 1500,
               tuneGrid = tunegrid,
@@ -147,7 +147,7 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
   return(fit_data)
 }
 
-formatInput <- function(thetas, includes) {
+formatInput <- function(thetas, includes, folder) {
   # Create include/exclude factor
   y <- vector(length = length(thetas[,1]))
   y[] <- 'exclude'
@@ -159,6 +159,12 @@ formatInput <- function(thetas, includes) {
   input <- data.frame(X = thetas)
   # Append the factor
   input$Class <- y
+
+  review_data_unclean <- read.csv(paste(folder, "review_metadata.csv", sep = "/"), header = FALSE)
+  review_data <- review_data_unclean[,1:2]
+
+  input$PID <- review_data[,1]
+  input$reviewID <- review_data[,2]
 
   return(input)
 }
@@ -193,6 +199,8 @@ getMetrics <- function(rf, test_set) {
              predictor = rf_probs[,1],
              levels = rev(levels(test_set$Class)))
 
+  metadata <- data.frame(PID = test_set$PID, reviewID = test_set$reviewID)
+
   base_positives <- test_set$Class == 'include'
   base_negatives <- test_set$Class == 'exclude'
 
@@ -217,5 +225,5 @@ getMetrics <- function(rf, test_set) {
 
   return(list(rf = rf, rf_probs = rf_probs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
              test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
-             accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1))
+             accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1, metadata = metadata))
 }

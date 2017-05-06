@@ -174,7 +174,7 @@ setupFitting <- function(corpus, project_name, file_version, k, alpha, beta, bur
 
   # FIT NEW MODEL
   if (!exists("fit_data")) {
-    fit_data <- LDASimulation(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
+    fit_data <- TmLDASimulation(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple)
   }
 
   return(fit_data)

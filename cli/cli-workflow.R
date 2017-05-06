@@ -26,10 +26,10 @@ clean_corpus <- setupPreprocessing(project_name, csv_name)
 
 library(tm)
 
-# dtm <- DocumentTermMatrix(clean_corpus)
-#
-# ui = unique(dtm$i)
-# dtm = dtm[ui,]
+dtm <- DocumentTermMatrix(clean_corpus)
+
+ui = unique(dtm$i)
+dtm = dtm[ui,]
 
 if (workflow_run_to == "cleaning") {
   stop()
@@ -50,7 +50,7 @@ library(parallel)
 if (fit_parallel) {
   datasets <- mclapply(
     fit_ks,
-    function(k) setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
+    function(k) setupFitting(dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
     mc.cores = parallel_cores,
     mc.silent = parallel_silent
   )
@@ -58,7 +58,7 @@ if (fit_parallel) {
   datasets <- list()
 
   for (k in fit_ks) {
-    datasets <- append(datasets, list(setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
+    datasets <- append(datasets, list(setupFitting(dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
   }
 }
 
