@@ -24,13 +24,6 @@ source("libraries/preprocessing.R")
 # Pre-process the corpus
 clean_corpus <- setupPreprocessing(project_name, csv_name)
 
-library(tm)
-
-dtm <- DocumentTermMatrix(clean_corpus)
-
-ui = unique(dtm$i)
-dtm = dtm[ui,]
-
 if (workflow_run_to == "cleaning") {
   stop()
 }
@@ -46,6 +39,9 @@ file_version <- getLastVersion("clean_corpus", project_location)
 source("interfaces/fit.R")
 
 library(parallel)
+suppressWarnings(library(tm))
+
+dtm <- DocumentTermMatrix(clean_corpus)
 
 if (fit_parallel) {
   datasets <- mclapply(
