@@ -79,7 +79,9 @@ trainForest <- function(training, set_num) {
     registerDoMC(cores = parallel_cores)
   }
 
-  rf <- train(Class ~ . - PID - reviewID, data = training,
+  training_cleaned <- training[ , !(names(training) %in% c('PID', 'reviewID'))]
+
+  rf <- train(Class ~ ., data = training_cleaned,
               method = "rf",
               ntree = 1500,
               tuneGrid = tunegrid,
@@ -190,7 +192,9 @@ getMetricsForFile <- function(project_name, file_version, set_num, fold_type = "
 }
 
 getMetrics <- function(rf, test_set) {
-  rf_probs <- predict(rf, test_set, type = "prob")
+  prob_test_set <- test_set[, !names(test_set) %in% c("PID", "reviewID")]
+
+  rf_probs <- predict(rf, prob_test_set, type = "prob")
 
   ROC <- roc(response = test_set$Class,
              predictor = rf_probs[,1],
