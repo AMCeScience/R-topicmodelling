@@ -31,11 +31,9 @@ singleFoldForest <- function(data, includes, training_selection, datasets_locati
 }
 
 crossFoldForest <- function(data, includes, datasets_location, file_version, set_num) {
-  thetas <- data$posterior$theta
-
   # Create include/exclude list
   print("Formatting inputs")
-  input <- formatInput(thetas, includes, datasets_location)
+  input <- formatInput(data, includes, datasets_location)
 
   # Create training folds
   print("Creating folds")
@@ -147,7 +145,9 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
   return(fit_data)
 }
 
-formatInput <- function(thetas, includes, folder) {
+formatInput <- function(data, includes, folder) {
+  thetas <- data$posterior$theta
+
   # Create include/exclude factor
   y <- vector(length = length(thetas[,1]))
   y[] <- 'exclude'
@@ -160,11 +160,8 @@ formatInput <- function(thetas, includes, folder) {
   # Append the factor
   input$Class <- y
 
-  review_data_unclean <- read.csv(paste(folder, "review_metadata.csv", sep = "/"), header = FALSE)
-  review_data <- review_data_unclean[,1:2]
-
-  input$PID <- review_data[,1]
-  input$reviewID <- review_data[,2]
+  input$PID <- data$pids
+  input$reviewID <- data$review_ids
 
   return(input)
 }

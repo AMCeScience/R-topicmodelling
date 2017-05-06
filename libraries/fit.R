@@ -78,7 +78,17 @@ LDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, bu
   return(runData)
 }
 
-TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
+TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
+  pids <- c()
+  review_ids <- c()
+
+  for (i in 1:length(corpus)) {
+    pids <- c(pids, corpus[[i]]$meta$pid)
+    review_ids <- c(review_ids, corpus[[i]]$meta$reviewid)
+  }
+
+  dtm <- DocumentTermMatrix(corpus)
+
   if (multiple) {
     control = list(alpha = alpha, delta = beta, iter = iter, keep = 1, nstart = 3, best = FALSE, seed = list(123234, 890, 112))
   } else {
@@ -121,6 +131,8 @@ TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, bur
     LDAData = LDAData,
     usedTerms = usedTerms,
     dtm = dtm,
+    pids = pids,
+    review_ids = review_ids,
     tokensPerDoc = tokensPerDoc,
     posterior = list(phi = phi, theta = theta),
     #termFrequency = termFrequency,

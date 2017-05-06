@@ -39,14 +39,11 @@ file_version <- getLastVersion("clean_corpus", project_location)
 source("interfaces/fit.R")
 
 library(parallel)
-suppressWarnings(library(tm))
-
-dtm <- DocumentTermMatrix(clean_corpus)
 
 if (fit_parallel) {
   datasets <- mclapply(
     fit_ks,
-    function(k) setupFitting(dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
+    function(k) setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep),
     mc.cores = parallel_cores,
     mc.silent = parallel_silent
   )
@@ -54,7 +51,7 @@ if (fit_parallel) {
   datasets <- list()
 
   for (k in fit_ks) {
-    datasets <- append(datasets, list(setupFitting(dtm, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
+    datasets <- append(datasets, list(setupFitting(clean_corpus, project_name, file_version, k, fit_divider/k, fit_beta, fit_burnin, fit_iter, fit_thin, fit_keep)))
   }
 }
 
