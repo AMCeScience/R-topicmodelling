@@ -43,8 +43,7 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
 
   print("Starting forest folds")
 
-  # Fit folds
-  for (i in rf_folds) {
+  val_list <- mclapply(rf_folds, function(i) {
     # Create test and train set for this fold
     testing <- input[trainFolds == i,]
     training <- input[trainFolds != i,]
@@ -53,8 +52,21 @@ crossFoldForest <- function(data, includes, datasets_location, file_version, set
     rf <- trainForest(training, set_num)
 
     # Store output metrics into list
-    val_list[[i]] <- getMetrics(rf, testing)
-  }
+    return(getMetrics(rf, testing))
+  }, mc.cores = parallel_cores, mc.silent = parallel_silent)
+
+  # Fit folds
+  # for (i in rf_folds) {
+  #   # Create test and train set for this fold
+  #   testing <- input[trainFolds == i,]
+  #   training <- input[trainFolds != i,]
+  #
+  #   # Train forest
+  #   rf <- trainForest(training, set_num)
+  #
+  #   # Store output metrics into list
+  #   val_list[[i]] <- getMetrics(rf, testing)
+  # }
 
   return(val_list)
 }
@@ -76,7 +88,7 @@ trainForest <- function(training, set_num) {
 
   # Parallel RFs
   if (rf_parallel) {
-    registerDoMC(cores = parallel_cores)
+    # registerDoMC(cores = parallel_cores)
   }
 
   training_cleaned <- training[ , !(names(training) %in% c('PID', 'reviewID'))]
