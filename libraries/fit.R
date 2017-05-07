@@ -85,8 +85,8 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
   review_ids <- vector("list", length(corpus))
 
   for (i in 1:length(corpus)) {
-    pids[i] <- corpus[[i]]$meta$pid
-    review_ids[i] <- corpus[[i]]$meta$reviewid
+    pids[i] <- as.numeric(corpus[[i]]$meta$pid)
+    review_ids[i] <- as.character(corpus[[i]]$meta$reviewid)
   }
 
   print("building dtm")
@@ -121,7 +121,7 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
 
   usedTerms <- colnames(phi)
 
-  tokensPerDoc <- rowSums(as.matrix(dtm))
+  # tokensPerDoc <- rowSums(as.matrix(dtm))
 
   print("TmLDASimulation tokensPerDoc done.")
 
@@ -137,7 +137,7 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
     dtm = dtm,
     pids = pids,
     review_ids = review_ids,
-    tokensPerDoc = tokensPerDoc,
+    #tokensPerDoc = tokensPerDoc,
     posterior = list(phi = phi, theta = theta),
     #termFrequency = termFrequency,
     control = control,
