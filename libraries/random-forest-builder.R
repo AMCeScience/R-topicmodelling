@@ -76,7 +76,7 @@ trainForest <- function(training, set_num) {
 
   # Parallel RFs
   if (rf_parallel) {
-    # registerDoMC(cores = parallel_cores)
+    registerDoMC(cores = parallel_cores)
   }
 
   training_cleaned <- training[ , !(names(training) %in% c('PID', 'reviewID'))]
