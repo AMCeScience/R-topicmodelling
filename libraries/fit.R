@@ -79,13 +79,17 @@ LDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, bu
 }
 
 TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
-  pids <- c()
-  review_ids <- c()
+  print("building ID list")
+
+  pids <- vector("list", length(corpus))
+  review_ids <- vector("list", length(corpus))
 
   for (i in 1:length(corpus)) {
-    pids <- c(pids, corpus[[i]]$meta$pid)
-    review_ids <- c(review_ids, corpus[[i]]$meta$reviewid)
+    pids[i] <- corpus[[i]]$meta$pid
+    review_ids[i] <- corpus[[i]]$meta$reviewid
   }
+
+  print("building dtm")
 
   dtm <- DocumentTermMatrix(corpus)
 
