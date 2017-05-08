@@ -7,14 +7,12 @@ suppressMessages(library(randomForest))
 suppressMessages(library(doMC))
 source("libraries/utils.R")
 
-singleFoldForest <- function(data, includes, training_selection, datasets_location, file_version) {
-  thetas <- data$posterior$theta
-
+singleFoldForest <- function(input_matrix, includes, training_selection, datasets_location, file_version) {
   # Create include/exclude list
-  input <- formatInput(thetas, includes)
+  input <- formatInput(input_matrix, includes)
 
   # Determine train and test portion of data
-  inTrain <- rep(0, length(thetas[,1]))
+  inTrain <- rep(0, length(input_matrix[,1]))
   inTrain[training_selection] <- 1
 
   # Split dataset into train and test set
@@ -30,32 +28,35 @@ singleFoldForest <- function(data, includes, training_selection, datasets_locati
   return(results)
 }
 
-crossFoldForest <- function(data, includes, datasets_location, file_version) {
-  thetas <- data
-
+crossFoldForest <- function(input_matrix, includes, datasets_location, file_version) {
   # Create include/exclude list
   print("Formatting inputs")
-  input <- formatInput(thetas, includes)
+  input <- formatInput(input_matrix, includes)
 
   # Create training folds
   print("Creating folds")
-  trainFolds <- createFolds(y = input$Class, k = length(rf_folds), list = FALSE)
+  # trainFolds <- createFolds(y = input$Class, k = length(rf_folds), list = FALSE)
+  train_folds <- createDataPartition(y = input$Class, times = 2, list = TRUE)
 
-  val_list <- list()
+  val_list <- vector("list", length = length(train_folds))
 
   print("Starting forest folds")
 
+  i <- 1
+
   # Fit folds
-  for (i in rf_folds) {
+  for (fold in train_folds) {
     # Create test and train set for this fold
-    testing <- input[trainFolds == i,]
-    training <- input[trainFolds != i,]
+    testing <- input[fold,]
+    training <- input[-fold,]
 
     # Train forest
     rf <- trainForest(training)
 
     # Store output metrics into list
     val_list[[i]] <- getMetrics(rf, testing)
+
+    i <- i + 1
   }
 
   return(val_list)
@@ -93,7 +94,7 @@ trainForest <- function(training) {
   return(rf)
 }
 
-setupForest <- function(dataset, includes, data_location, file_version, folds = FALSE, training_selection = FALSE) {
+setupForest <- function(input_matrix, includes, data_location, file_version, folds = FALSE, training_selection = FALSE) {
   # DIRECTORY TESTING
   if (!dir.exists(data_location)) {
     stop("Data directory does not exist")
@@ -128,11 +129,11 @@ setupForest <- function(dataset, includes, data_location, file_version, folds = 
     if (folds == TRUE) {
       print("Fitting a new CROSS FOLD random forest")
 
-      fit_data <- crossFoldForest(dataset, includes, data_location, file_version)
+      fit_data <- crossFoldForest(input_matrix, includes, data_location, file_version)
     } else {
       print("Fitting a new SINGLE random forest")
 
-      fit_data <- singleFoldForest(dataset, includes, training_selection, data_location, file_version)
+      fit_data <- singleFoldForest(input_matrix, includes, training_selection, data_location, file_version)
     }
 
     if (rf_store) {

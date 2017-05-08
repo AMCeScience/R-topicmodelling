@@ -190,9 +190,9 @@ cleanMyText <- function(original_text, stem, gram) {
   return(result)
 }
 
-addIDs <- function(corpus) {
+addMetadata <- function(corpus) {
   for (i in 1:length(corpus)) {
-    corpus[[i]]$meta$id = i
+    corpus$content[[i]]$meta$id <- i
   }
 
   return(corpus)
@@ -224,12 +224,12 @@ runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
   clean_corpus <- cleanMyText(documents, stem, gram)
 
   print("Cleaning: add back document ids.")
-  clean_corpus <- addIDs(clean_corpus)
+  clean_corpus <- addMetadata(clean_corpus)
 
   return(clean_corpus)
 }
 
-setupPreprocessing <- function(project_name, csv_name) {
+setupPreprocessing <- function(project_name, csv_name, includes) {
   data_folder <- getProjectFolder(project_name)
 
   csv_location <- paste(corpus_folder, "/", csv_name, ".csv", sep = "")
@@ -295,4 +295,12 @@ setupPreprocessing <- function(project_name, csv_name) {
   }
 
   return(clean_corpus)
+}
+
+appendIncludes <- function(corpus, includes) {
+  for (i in 1:length(corpus)) {
+    corpus$content[[i]]$meta$included <- i %in% includes
+  }
+
+  return(corpus)
 }
