@@ -38,28 +38,28 @@ crossFoldForest <- function(input_matrix, includes, datasets_location, file_vers
   # trainFolds <- createFolds(y = input$Class, k = length(rf_folds), list = FALSE)
   train_folds <- createDataPartition(y = input$Class, times = 2, list = TRUE)
 
-  val_list <- vector("list", length = length(train_folds))
-
   print("Starting forest folds")
 
-  i <- 1
+  temp_file_list <- vector("list", length = length(train_folds))
 
   # Fit folds
-  for (fold in train_folds) {
+  for (i in 1:length(train_folds)) {
     # Create test and train set for this fold
-    testing <- input[fold,]
-    training <- input[-fold,]
+    testing <- input[train_folds[[i]],]
+    training <- input[-train_folds[[i]],]
 
     # Train forest
     rf <- trainForest(training)
 
     # Store output metrics into list
-    val_list[[i]] <- getMetrics(rf, testing)
+    temp_file_list[[i]] <- tempfile(fileext = ".rds")
 
-    i <- i + 1
+    saveRDS(getMetrics(rf, testing), temp_file_list[[i]])
+
+    rm(rf, testing, training)
   }
 
-  return(val_list)
+  return(temp_file_list)
 }
 
 trainForest <- function(training) {
@@ -129,7 +129,15 @@ setupForest <- function(input_matrix, includes, data_location, file_version, fol
     if (folds == TRUE) {
       print("Fitting a new CROSS FOLD random forest")
 
-      fit_data <- crossFoldForest(input_matrix, includes, data_location, file_version)
+      file_list <- crossFoldForest(input_matrix, includes, data_location, file_version)
+
+      fit_data <- vector("list", length = length(file_list))
+
+      for (i in 1:length(file_list)) {
+        fit_data[[i]] <- readRDS(file_list[[i]])
+
+        unlink(file_list[[i]])
+      }
     } else {
       print("Fitting a new SINGLE random forest")
 
