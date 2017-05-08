@@ -277,6 +277,11 @@ setupPreprocessing <- function(project_name, csv_name) {
 
     clean_corpus <- runPreprocessing(csv_location, clean_stem, clean_gram)
 
+    # Remove empty rows
+    dtm <- DocumentTermMatrix(clean_corpus)
+
+    clean_corpus <- clean_corpus[unique(dtm$i)]
+
     if (clean_store == TRUE) {
       print(paste("Writing to: ", corpus_location))
 
