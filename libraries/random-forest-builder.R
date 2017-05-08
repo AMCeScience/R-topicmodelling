@@ -44,6 +44,8 @@ crossFoldForest <- function(input_matrix, includes, datasets_location, file_vers
 
   # Fit folds
   for (i in 1:length(train_folds)) {
+    print(paste("### Starting with fold:", i, sep = " "))
+
     # Create test and train set for this fold
     testing <- input[train_folds[[i]],]
     training <- input[-train_folds[[i]],]
@@ -57,6 +59,8 @@ crossFoldForest <- function(input_matrix, includes, datasets_location, file_vers
     saveRDS(getMetrics(rf, testing), temp_file_list[[i]])
 
     rm(rf, testing, training)
+
+    print(paste("### Done with fold:", i, sep = " "))
   }
 
   return(temp_file_list)
