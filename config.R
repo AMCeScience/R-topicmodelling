@@ -3,7 +3,7 @@ configLoaded <- TRUE
 # GENERIC
 corpus_folder <- "originals"
 data_folder <- "data"
-parallel_cores <- 2
+parallel_cores <- 5
 parallel_silent <- FALSE
 workflow_run_to <- "forest"
 
@@ -41,7 +41,7 @@ fit_parallel <- FALSE
 rf_force <- TRUE
 rf_store <- TRUE
 rf_fold <- TRUE
-rf_folds <- 1:2
-rf_parallel <- FALSE
+rf_folds <- 1:1
+rf_parallel <- TRUE
 
 rfa_store <- TRUE
