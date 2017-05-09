@@ -34,7 +34,7 @@ fit_parallel <- FALSE
 rf_force <- TRUE
 rf_store <- TRUE
 rf_fold <- TRUE
-rf_folds <- 1:1
+rf_folds <- 1
 rf_ntree <- 200
 rf_parallel <- TRUE
 

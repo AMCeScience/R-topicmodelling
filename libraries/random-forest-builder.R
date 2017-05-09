@@ -36,7 +36,7 @@ crossFoldForest <- function(input_matrix, includes, datasets_location, file_vers
   # Create training folds
   print("Creating folds")
   # trainFolds <- createFolds(y = input$Class, k = length(rf_folds), list = FALSE)
-  train_folds <- createDataPartition(y = input$Class, times = 2, list = TRUE)
+  train_folds <- createDataPartition(y = input$Class, times = rf_folds, list = TRUE)
 
   print("Starting forest folds")
 
@@ -178,12 +178,12 @@ formatInput <- function(thetas, includes) {
 }
 
 getMtry <- function(set_num) {
-  mtry <- seq(1, set_num, 100)
+  mtry <- seq(1, 200, 10)
 
   # Append set_num if not divisible by 100
-  if (set_num %% 100 != 0) {
-    mtry <- c(mtry, set_num)
-  }
+  # if (set_num %% 10 != 0) {
+  #   mtry <- c(mtry, set_num)
+  # }
 
   return(mtry)
 }
