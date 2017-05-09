@@ -47,6 +47,6 @@ result <- executeForest(project_name, clean_corpus)
 
 # RANDOM FOREST ANALYSER --------------------------------
 
-# source("libraries/random-forest-analyser.R")
+source("libraries/random-forest-analyser.R")
 
-# results <- setupForestAnalysis(project_location, file_version, rf_fold)
+results <- setupForestAnalysis(project_location, file_version, rf_fold)

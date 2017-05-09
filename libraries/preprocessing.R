@@ -298,7 +298,7 @@ setupPreprocessing <- function(project_name, csv_name, includes) {
 }
 
 appendIncludes <- function(corpus, includes) {
-  for (i in 1:length(corpus)) {
+  for (i in 1:length(corpus$content)) {
     corpus$content[[i]]$meta$included <- i %in% includes
   }
 

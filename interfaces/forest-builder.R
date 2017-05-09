@@ -13,7 +13,7 @@ executeForest <- function(project_name, corpus) {
 
   includes <- vector("list")
 
-  for (i in 1:length(corpus)) {
+  for (i in 1:length(corpus$content)) {
     if (corpus$content[[i]]$meta$included) {
       includes <- c(includes, i)
     }
