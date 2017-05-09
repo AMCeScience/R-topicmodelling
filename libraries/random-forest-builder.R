@@ -88,7 +88,7 @@ trainForest <- function(training) {
 
   rf <- train(Class ~ ., data = training,
               method = "rf",
-              ntree = 1500,
+              ntree = rf_ntree,
               tuneGrid = tunegrid,
               metric = "ROC",
               trControl = ctrl,
