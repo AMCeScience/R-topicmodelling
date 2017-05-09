@@ -3,7 +3,7 @@ configLoaded <- TRUE
 # GENERIC
 corpus_folder <- "originals"
 data_folder <- "data"
-parallel_cores <- 2
+parallel_cores <- detectCores()
 parallel_silent <- FALSE
 workflow_run_to <- "forest"
 
