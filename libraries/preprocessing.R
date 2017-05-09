@@ -229,7 +229,7 @@ runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
   return(clean_corpus)
 }
 
-setupPreprocessing <- function(project_name, csv_name, includes) {
+setupPreprocessing <- function(project_name, csv_name) {
   data_folder <- getProjectFolder(project_name)
 
   csv_location <- paste(corpus_folder, "/", csv_name, ".csv", sep = "")

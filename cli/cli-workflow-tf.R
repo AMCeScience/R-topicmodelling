@@ -30,7 +30,7 @@ file_version <- getLastVersion("clean_corpus", project_location)
 source(paste(project_location, selection_file, sep = "/"))
 
 # Pre-process the corpus
-clean_corpus <- setupPreprocessing(project_name, csv_name, includes)
+clean_corpus <- setupPreprocessing(project_name, csv_name)
 clean_corpus <- appendIncludes(clean_corpus, includes)
 
 if (workflow_run_to == "cleaning") {
