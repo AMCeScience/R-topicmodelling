@@ -78,7 +78,7 @@ trainForest <- function(training) {
                        summaryFunction = twoClassSummary,
                        verboseIter = TRUE)
 
-  mtry <- getMtry(length(training[1,]) - 1)
+  mtry <- getMtry(length(training[1,]))
 
   tunegrid <- expand.grid(.mtry = mtry)
 
@@ -179,7 +179,7 @@ formatInput <- function(thetas, includes) {
 }
 
 getMtry <- function(set_num) {
-  mtry <- seq(1, 200, 10)
+  mtry <- seq(1, sqrt(set_num) * 2, 10)
 
   # Append set_num if not divisible by 100
   # if (set_num %% 10 != 0) {
