@@ -1,12 +1,5 @@
 configLoaded <- TRUE
 
-# GENERIC
-corpus_folder <- "originals"
-data_folder <- "data"
-parallel_cores <- detectCores()
-parallel_silent <- FALSE
-workflow_run_to <- "forest"
-
 # CLEAN
 clean_force <- FALSE
 clean_store <- TRUE
@@ -46,3 +39,16 @@ rf_ntree <- 200
 rf_parallel <- TRUE
 
 rfa_store <- TRUE
+
+# GENERIC
+corpus_folder <- "originals"
+data_folder <- "data"
+parallel_cores <- 2
+parallel_silent <- FALSE
+workflow_run_to <- "forest"
+
+if (fit_parallel || rf_parallel) {
+  suppressMessages(library(parallel))
+
+  parallel_cores <- detectCores()
+}
