@@ -192,9 +192,9 @@ cleanMyText <- function(original_text, stem, gram) {
 
 addIDs <- function(corpus, metadata) {
   for (i in 1:length(corpus)) {
-    corpus[[i]]$meta$id <- i
-    corpus[[i]]$meta$pid <- metadata[i,1]
-    corpus[[i]]$meta$reviewid <- metadata[i,2]
+    corpus$content[[i]]$meta$id <- i
+    corpus$content[[i]]$meta$pid <- metadata[i,1]
+    corpus$content[[i]]$meta$reviewid <- metadata[i,2]
   }
 
   return(corpus)
@@ -229,11 +229,6 @@ runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
 
   print("Cleaning: add back document ids.")
   clean_corpus <- addIDs(clean_corpus, data[,2:3])
-
-  # Remove empty rows
-  dtm <- DocumentTermMatrix(clean_corpus)
-
-  clean_corpus <- clean_corpus[unique(dtm$i)]
 
   return(clean_corpus)
 }
@@ -299,4 +294,12 @@ setupPreprocessing <- function(project_name, csv_name) {
   }
 
   return(clean_corpus)
+}
+
+appendIncludes <- function(corpus, includes) {
+  for (i in 1:length(corpus)) {
+    corpus$content[[i]]$meta$included <- i %in% includes
+  }
+
+  return(corpus)
 }

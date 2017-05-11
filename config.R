@@ -5,7 +5,7 @@ corpus_folder <- "originals"
 data_folder <- "data"
 parallel_cores <- 2
 parallel_silent <- FALSE
-workflow_run_to <- "forest"
+workflow_run_to <- "cleaning"
 
 # CLEAN
 clean_force <- FALSE
@@ -41,7 +41,7 @@ fit_parallel <- TRUE
 rf_force <- TRUE
 rf_store <- TRUE
 rf_fold <- TRUE
-rf_folds <- 1:2
+rf_folds <- 1
 rf_parallel <- TRUE
 
 rfa_store <- TRUE
