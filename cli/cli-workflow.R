@@ -4,23 +4,17 @@
 # CALL
 # ./cli-workflow.R ~/workspace/R test_corp articles_sysrev_test
 
-source("config.R")
-
-setwd("~/workspace/R")
-project_name <- "testing"
-csv_name <- "bla"
-
-# source("cli-input.R")
+source("cli-input.R")
 source("libraries/utils.R")
 
-# if (length(args) < 3) {
-#   stop("Corpus name or CSV name not provided")
-# }
+if (length(args) < 3) {
+  stop("Corpus name or CSV name not provided")
+}
 
 # CLEANING ----------------------------------------------
 
-# project_name <- args[2]
-# csv_name <- args[3]
+project_name <- args[2]
+csv_name <- args[3]
 
 project_location <- getProjectFolder(project_name)
 
@@ -86,8 +80,6 @@ result <- list()
 
 for (dataset in datasets) {
   result <- append(result, list(executeForest(dataset, project_name, clean_corpus)))
-
-  rm(dataset)
 }
 
 # RANDOM FOREST ANALYSER --------------------------------
