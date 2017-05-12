@@ -70,7 +70,8 @@ trainForest <- function(training) {
   # Create control variable, set to cross validate
   ctrl <- trainControl(method = "cv",
                        classProbs = TRUE,
-                       summaryFunction = twoClassSummary)
+                       summaryFunction = twoClassSummary,
+                       verboseIter = TRUE)
 
   mtry <- getMtry(length(training[1,]) - 1)
 
