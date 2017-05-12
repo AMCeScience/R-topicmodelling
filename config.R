@@ -14,7 +14,7 @@ clean_gram <- FALSE
 clean_stem <- FALSE
 clean_overwrite <- TRUE
 clean_grams <- 1:2
-clean_extra_stopwords <- c("big", "data", "big_data") #c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database",
+clean_extra_stopwords <- c()#c("big", "data", "big_data") #c("big", "data", "ieee", "discussion", "conclusion", "introduction", "methods", "psycinfo_database",
                           # "rights_reserved", "record_apa", "journal_abstract", "apa_rights", "psycinfo", "reserved_journal",
                           # "conclusionadvancement", "apa", "reserved", "rights_journal",
                           # "test", "case", "proven_probable", "perform", "result", "detect", "present", "reveal", "year",

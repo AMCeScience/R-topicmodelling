@@ -27,6 +27,8 @@ executeForest <- function(dataset, project_name, corpus) {
 
   thetas <- dataset$posterior$theta
 
+  rm(dataset)
+
   result <- setupForest(thetas, includes, project_location, file_version, rf_fold, training_selection)
 
   return(result)
