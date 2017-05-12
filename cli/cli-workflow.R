@@ -72,29 +72,19 @@ if (workflow_run_to == "fitting") {
 
 # RANDOM FOREST -----------------------------------------
 
-source("libraries/random-forest-builder.R")
+source("interfaces/forest-builder.R")
 
-runSet <- function(dataset) {
-  results <- setupForest(dataset, includes, project_location, file_version, rf_fold, training_selection)
-
-  return(results)
-}
-
-#if (rf_parallel) {
-#  results <- mclapply(datasets, function(set) runSet(set), mc.cores = parallel_cores, mc.silent = parallel_silent)
-#} else {
-results <- list()
+result <- list()
 
 for (dataset in datasets) {
-  results <- append(results, list(runSet(dataset)))
+  result <- append(result, list(executeForest(dataset, project_name, clean_corpus)))
 }
-#}
 
 # RANDOM FOREST ANALYSER --------------------------------
 
-source("libraries/random-forest-analyser.R")
+# source("libraries/random-forest-analyser.R")
 
-results <- setupForestAnalysis(project_location, file_version, rf_fold)
+# results <- setupForestAnalysis(project_location, file_version, rf_fold)
 
 # ANALYSIS -------------------------------
 
