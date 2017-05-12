@@ -75,21 +75,11 @@ if (workflow_run_to == "fitting") {
 # RANDOM FOREST -----------------------------------------
 
 source("interfaces/forest-builder.R")
+source("interfaces/forest-probabilities.R")
 
-result <- list()
+rf <- list()
 
 for (dataset in datasets) {
-  result <- append(result, list(executeForest(dataset, project_name, clean_corpus)))
+  rf <- executeForest(dataset, project_name, clean_corpus)
+  probs <- probabilitiesForest(rf, dataset, clean_corpus, project_name)
 }
-
-# RANDOM FOREST ANALYSER --------------------------------
-
-# source("libraries/random-forest-analyser.R")
-
-# results <- setupForestAnalysis(project_location, file_version, rf_fold)
-
-# ANALYSIS -------------------------------
-
-#TODO
-
-#source("libraries/")

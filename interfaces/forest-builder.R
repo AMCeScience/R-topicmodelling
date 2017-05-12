@@ -17,7 +17,7 @@ executeForest <- function(dataset, project_name, corpus) {
     }
 
     if (corpus$content[[i]]$meta$reviewid %in% test_reviewIDs && last_item == 0) {
-      last_item <- i
+      last_item <- i - 1
     }
   }
 
@@ -25,7 +25,7 @@ executeForest <- function(dataset, project_name, corpus) {
 
   includes <- unlist(includes)
 
-  thetas <- dataset$posterior$theta
+  thetas <- dataset$posterior$theta[1:last_item,]
 
   rm(dataset)
 
