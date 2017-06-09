@@ -4,7 +4,7 @@ library(pROC)
 library(caret)
 library(methods)
 
-#corpus <- readRDS("data/contrast-tdm/clean_corpus_1.rds")
+#corpus <- readRDS("data/contrast-glmnet/clean_corpus_1.rds")
 
 print("Getting DTM")
 dtm <- DocumentTermMatrix(corpus)
@@ -39,19 +39,20 @@ print("Getting folds")
 train_folds <- createFolds(y = y, k = 10, list = TRUE)
 
 print("Starting folds")
-i <- 0
+
+i <- 1
+
 words <- vector("list")
 fits <- vector("list")
 rocs <- vector("list")
 
-runFold <- function(fold) {
+runFold <- function(fold, project_location) {
   train <- dtm_matrix[-fold,]
   train_y <- y[-fold]
   test <- dtm_matrix[fold,]
   test_y <- y[fold]
 
   c <- cv.glmnet(train, train_y, family = "binomial")
-  fits[i] <- c
 
   prob <- predict(c, type = "response", newx = test, s = "lambda.1se")
 
@@ -59,15 +60,13 @@ runFold <- function(fold) {
   cut_coeffs <- coeffs[2:length(coeffs[,1]),]
   filtered_coeffs <- cut_coeffs[cut_coeffs > 0]
   #ordered <- filtered_coeffs[order(filtered_coeffs, decreasing = TRUE)]
-  words[i] <- names(filtered_coeffs)
+  words <- names(filtered_coeffs)
 
-  rocs[i] <- roc(test_y, as.vector(prob))
+  roc <- roc(test_y, as.vector(prob))
 
-  # if (i == 0) {
-  #   plot(g)
-  # } else {
-  #   lines(g)
-  # }
+  saveRDS(c, paste(project_location, "/fit_", i, ".rds", sep = ""))
+  saveRDS(words, paste(project_location, "/words_", i, ".rds", sep = ""))
+  saveRDS(roc, paste(project_location, "/roc_", i, ".rds", sep = ""))
 
   i <- i + 1
 
@@ -76,15 +75,11 @@ runFold <- function(fold) {
 
 mclapply(
   train_folds,
-  function(fold) runFold(fold),
+  function(fold) runFold(fold, project_location),
   mc.cores = parallel_cores,
-  mc.silent = parallel_silent
+  mc.silent = FALSE
 )
 
 # for (fold in train_folds) {
 #   runFold(fold)
 # }
-
-saveRDS(fits, paste(project_location, "fits.rds", sep = "/"))
-saveRDS(words, paste(project_location, "words.rds", sep = "/"))
-saveRDS(rocs, paste(project_location, "rocs.rds", sep = "/"))
