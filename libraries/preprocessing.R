@@ -229,7 +229,7 @@ runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
   return(clean_corpus)
 }
 
-setupPreprocessing <- function(project_name, csv_name) {
+setupPreprocessing <- function(project_name, csv_name, includes = c()) {
   data_folder <- getProjectFolder(project_name)
 
   csv_location <- paste(corpus_folder, "/", csv_name, ".csv", sep = "")
@@ -281,6 +281,10 @@ setupPreprocessing <- function(project_name, csv_name) {
     dtm <- DocumentTermMatrix(clean_corpus)
 
     clean_corpus <- clean_corpus[unique(dtm$i)]
+
+    if (length(includes) > 0) {
+      clean_corpus <- appendIncludes(clean_corpus, includes)
+    }
 
     if (clean_store == TRUE) {
       print(paste("Writing to: ", corpus_location))
