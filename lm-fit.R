@@ -64,21 +64,23 @@ runFold <- function(fold, project_location) {
 
   roc <- roc(test_y, as.vector(prob))
 
-  saveRDS(c, paste(project_location, "/fit_", i, ".rds", sep = ""))
-  saveRDS(words, paste(project_location, "/words_", i, ".rds", sep = ""))
-  saveRDS(roc, paste(project_location, "/roc_", i, ".rds", sep = ""))
+  #saveRDS(c, paste(project_location, "/fit_", i, ".rds", sep = ""))
+  #saveRDS(words, paste(project_location, "/words_", i, ".rds", sep = ""))
+  #saveRDS(roc, paste(project_location, "/roc_", i, ".rds", sep = ""))
 
-  i <- i + 1
+  df <- data.frame(fit = c, roc = roc, words = words)
 
-  print(paste("Ran fold", i, sep = " "))
+  return(df)
 }
 
-mclapply(
+data <- mclapply(
   train_folds,
   function(fold) runFold(fold, project_location),
   mc.cores = parallel_cores,
   mc.silent = FALSE
 )
+
+saveRDS(data, paste(project_location, "data.rds", sep = "/"))
 
 # for (fold in train_folds) {
 #   runFold(fold)
