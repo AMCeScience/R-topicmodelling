@@ -4,7 +4,7 @@ library(pROC)
 library(caret)
 library(methods)
 
-#corpus <- readRDS("data/contrast-glmnet/clean_corpus_1.rds")
+# corpus <- readRDS("data/contrast-2011/clean_corpus_1.rds")
 
 print("Getting DTM")
 dtm <- DocumentTermMatrix(corpus)
@@ -40,13 +40,15 @@ train_folds <- createFolds(y = y, k = 10, list = TRUE)
 
 print("Starting folds")
 
-i <- 1
+i <- seq(1,10)
 
 words <- vector("list")
 fits <- vector("list")
 rocs <- vector("list")
 
-runFold <- function(fold, project_location) {
+runFold <- function(i, train_folds, project_location) {
+  fold <- train_folds[[i]]
+
   train <- dtm_matrix[-fold,]
   train_y <- y[-fold]
   test <- dtm_matrix[fold,]
@@ -64,24 +66,34 @@ runFold <- function(fold, project_location) {
 
   roc <- roc(test_y, as.vector(prob))
 
-  #saveRDS(c, paste(project_location, "/fit_", i, ".rds", sep = ""))
-  #saveRDS(words, paste(project_location, "/words_", i, ".rds", sep = ""))
-  #saveRDS(roc, paste(project_location, "/roc_", i, ".rds", sep = ""))
-
-  df <- data.frame(fit = c, roc = roc, words = words)
-
-  return(df)
+  saveRDS(c, paste(project_location, "/fit_", i, ".rds", sep = ""))
+  saveRDS(words, paste(project_location, "/words_", i, ".rds", sep = ""))
+  saveRDS(roc, paste(project_location, "/roc_", i, ".rds", sep = ""))
 }
 
 data <- mclapply(
-  train_folds,
-  function(fold) runFold(fold, project_location),
+  i,
+  function(k) runFold(k, train_folds, project_location),
   mc.cores = parallel_cores,
   mc.silent = FALSE
 )
+#
+# saveRDS(data, paste(project_location, "data.rds", sep = "/"))
 
-saveRDS(data, paste(project_location, "data.rds", sep = "/"))
-
-# for (fold in train_folds) {
-#   runFold(fold)
+# for (k in i) {
+#   runFold(k, train_folds, project_location)
 # }
+
+# all_fit <- list("vector")
+# all_words <- list("vector")
+# all_roc <- list("vector")
+#
+# for (k in i) {
+#   all_fit[i] <- c(readRDS(paste(project_location, "/fit_", k, ".rds", sep = "")))
+#   all_words[i] <- c(readRDS(paste(project_location, "/words_", k, ".rds", sep = "")))
+#   all_roc[i] <- c(readRDS(paste(project_location, "/roc_", k, ".rds", sep = "")))
+# }
+#
+# saveRDS(all_fit, paste(project_location, "fits.rds", sep = "/"))
+# saveRDS(all_words, paste(project_location, "words.rds", sep = "/"))
+# saveRDS(all_roc, paste(project_location, "rocs.rds", sep = "/"))
