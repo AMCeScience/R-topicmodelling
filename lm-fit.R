@@ -77,23 +77,3 @@ data <- mclapply(
   mc.cores = parallel_cores,
   mc.silent = FALSE
 )
-#
-# saveRDS(data, paste(project_location, "data.rds", sep = "/"))
-
-# for (k in i) {
-#   runFold(k, train_folds, project_location)
-# }
-
-# all_fit <- list("vector")
-# all_words <- list("vector")
-# all_roc <- list("vector")
-#
-# for (k in i) {
-#   all_fit[i] <- c(readRDS(paste(project_location, "/fit_", k, ".rds", sep = "")))
-#   all_words[i] <- c(readRDS(paste(project_location, "/words_", k, ".rds", sep = "")))
-#   all_roc[i] <- c(readRDS(paste(project_location, "/roc_", k, ".rds", sep = "")))
-# }
-#
-# saveRDS(all_fit, paste(project_location, "fits.rds", sep = "/"))
-# saveRDS(all_words, paste(project_location, "words.rds", sep = "/"))
-# saveRDS(all_roc, paste(project_location, "rocs.rds", sep = "/"))
