@@ -9,23 +9,24 @@ executeForest <- function(dataset, project_name, corpus) {
 
   includes <- vector("list")
 
-  last_item <- 0
+  # last_item <- 0
 
   for (i in 1:length(corpus$content)) {
     if (corpus$content[[i]]$meta$included) {
       includes <- c(includes, i)
     }
 
-    if (corpus$content[[i]]$meta$reviewid %in% test_reviewIDs && last_item == 0) {
-      last_item <- i - 1
-    }
+    # if (corpus$content[[i]]$meta$reviewid %in% test_reviewIDs && last_item == 0) {
+    #   last_item <- i - 1
+    # }
   }
 
   rm(corpus)
 
   includes <- unlist(includes)
 
-  thetas <- dataset$posterior$theta[1:last_item,]
+  # thetas <- dataset$posterior$theta[1:last_item,]
+  thetas <- dataset$posterior$theta
 
   rm(dataset)
 
