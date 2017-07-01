@@ -81,13 +81,13 @@ LDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, bu
 TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, burnin, iter, thin, keep, multiple = FALSE) {
   print("building ID list")
 
-  pids <- vector("list", length(corpus))
-  review_ids <- vector("list", length(corpus))
+  # pids <- vector("list", length(corpus))
+  # review_ids <- vector("list", length(corpus))
 
-  for (i in 1:length(corpus$content)) {
-    pids[i] <- as.numeric(corpus$content[[i]]$meta$pid)
-    review_ids[i] <- as.character(corpus$content[[i]]$meta$reviewid)
-  }
+  # for (i in 1:length(corpus$content)) {
+  #   pids[i] <- as.numeric(corpus$content[[i]]$meta$pid)
+  #   review_ids[i] <- as.character(corpus$content[[i]]$meta$reviewid)
+  # }
 
   print("building dtm")
 
@@ -135,8 +135,8 @@ TmLDASimulation <- function(corpus, project_name, file_version, k, alpha, beta, 
     LDAData = LDAData,
     usedTerms = usedTerms,
     dtm = dtm,
-    pids = pids,
-    review_ids = review_ids,
+    # pids = pids,
+    # review_ids = review_ids,
     #tokensPerDoc = tokensPerDoc,
     posterior = list(phi = phi, theta = theta),
     #termFrequency = termFrequency,

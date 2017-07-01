@@ -82,9 +82,9 @@ trainForest <- function(training) {
     registerDoMC(cores = parallel_cores)
   }
 
-  training_cleaned <- training[ , !(names(training) %in% c('PID', 'reviewID'))]
+  # training_cleaned <- training[ , !(names(training) %in% c('PID', 'reviewID'))]
 
-  rf <- train(Class ~ ., data = training_cleaned,
+  rf <- train(Class ~ ., data = training,
               method = "rf",
               ntree = rf_ntree,
               tuneGrid = tunegrid,
@@ -200,15 +200,15 @@ getMetricsForFile <- function(project_name, file_version, set_num, fold_type = "
 }
 
 getMetrics <- function(rf, test_set) {
-  prob_test_set <- test_set[, !names(test_set) %in% c("PID", "reviewID")]
+  # prob_test_set <- test_set[, !names(test_set) %in% c("PID", "reviewID")]
 
-  rf_probs <- predict(rf, prob_test_set, type = "prob")
+  rf_probs <- predict(rf, test_set, type = "prob")
 
   ROC <- roc(response = test_set$Class,
              predictor = rf_probs[,1],
              levels = rev(levels(test_set$Class)))
 
-  metadata <- data.frame(PID = test_set$PID, reviewID = test_set$reviewID)
+  # metadata <- data.frame(PID = test_set$PID, reviewID = test_set$reviewID)
 
   base_positives <- test_set$Class == 'include'
   base_negatives <- test_set$Class == 'exclude'
