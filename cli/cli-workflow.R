@@ -81,5 +81,5 @@ rf <- list()
 
 for (dataset in datasets) {
   rf <- executeForest(dataset, project_name, clean_corpus)
-  probs <- probabilitiesForest(rf, dataset, clean_corpus, project_name)
+  # probs <- probabilitiesForest(rf, dataset, clean_corpus, project_name)
 }
