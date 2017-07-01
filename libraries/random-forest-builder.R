@@ -234,7 +234,7 @@ getMetrics <- function(rf, test_set) {
 
   return(list(rf = rf, rf_probs = rf_probs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
              test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
-             accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1, metadata = metadata))
+             accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1))
 
   # return(list(rf = rf))
 }
