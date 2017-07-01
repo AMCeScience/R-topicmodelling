@@ -200,41 +200,41 @@ getMetricsForFile <- function(project_name, file_version, set_num, fold_type = "
 }
 
 getMetrics <- function(rf, test_set) {
-  # prob_test_set <- test_set[, !names(test_set) %in% c("PID", "reviewID")]
-  #
-  # rf_probs <- predict(rf, prob_test_set, type = "prob")
-  #
-  # ROC <- roc(response = test_set$Class,
-  #            predictor = rf_probs[,1],
-  #            levels = rev(levels(test_set$Class)))
-  #
-  # metadata <- data.frame(PID = test_set$PID, reviewID = test_set$reviewID)
-  #
-  # base_positives <- test_set$Class == 'include'
-  # base_negatives <- test_set$Class == 'exclude'
-  #
-  # test_positives <- rf_probs$include >= 0.5
-  # test_negatives <- rf_probs$exclude > 0.5
-  #
-  # TP <- sizeTrue(test_positives & base_positives)
-  # TN <- sizeTrue(test_negatives & base_negatives)
-  #
-  # FP <- sizeTrue(test_positives & base_negatives)
-  # FN <- sizeTrue(test_negatives & base_positives)
-  #
-  # recall <- TP / sizeTrue(base_positives) # most important, has to be close to 1
-  #
-  # accuracy <- (TP + TN) / (TP + TN + FP + FN) # not interesting
-  # precision <- TP / (TP + FP) # not interesting
-  #
-  # sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1 == recall
-  # specificity <- TN / sizeTrue(base_negatives) # not interesting
-  #
-  # F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
-  #
-  # return(list(rf = rf, rf_probs = rf_probs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
-  #            test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
-  #            accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1, metadata = metadata))
+  prob_test_set <- test_set[, !names(test_set) %in% c("PID", "reviewID")]
 
-  return(list(rf = rf))
+  rf_probs <- predict(rf, prob_test_set, type = "prob")
+
+  ROC <- roc(response = test_set$Class,
+             predictor = rf_probs[,1],
+             levels = rev(levels(test_set$Class)))
+
+  metadata <- data.frame(PID = test_set$PID, reviewID = test_set$reviewID)
+
+  base_positives <- test_set$Class == 'include'
+  base_negatives <- test_set$Class == 'exclude'
+
+  test_positives <- rf_probs$include >= 0.5
+  test_negatives <- rf_probs$exclude > 0.5
+
+  TP <- sizeTrue(test_positives & base_positives)
+  TN <- sizeTrue(test_negatives & base_negatives)
+
+  FP <- sizeTrue(test_positives & base_negatives)
+  FN <- sizeTrue(test_negatives & base_positives)
+
+  recall <- TP / sizeTrue(base_positives) # most important, has to be close to 1
+
+  accuracy <- (TP + TN) / (TP + TN + FP + FN) # not interesting
+  precision <- TP / (TP + FP) # not interesting
+
+  sensitivity <- TP / sizeTrue(base_positives) # most important, has to be close to 1 == recall
+  specificity <- TN / sizeTrue(base_negatives) # not interesting
+
+  F1 <- 2 * ((precision * recall) / (precision + recall)) # not interesting, will be terrible
+
+  return(list(rf = rf, rf_probs = rf_probs, ROC = ROC, base_positives = base_positives, base_negatives = base_negatives,
+             test_positives = test_positives, test_negatives = test_negatives, TP = TP, TN = TN, FP = FP, FN = FN, recall = recall,
+             accuracy = accuracy, precision = precision, sensitivity = sensitivity, specificity = specificity, F1 = F1, metadata = metadata))
+
+  # return(list(rf = rf))
 }
