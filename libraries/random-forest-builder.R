@@ -44,11 +44,11 @@ crossFoldForest <- function(data, includes, datasets_location, file_version) {
   # Fit folds
   for (i in 1:length(train_folds)) {
     # Create test and train set for this fold
-    # testing <- input[train_folds[[i]],]
-    # training <- input[-train_folds[[i]],]
+    testing <- input[train_folds[[i]],]
+    training <- input[-train_folds[[i]],]
 
     # Train forest
-    rf <- trainForest(input)
+    rf <- trainForest(training)
 
     # Store output metrics into list
     temp_file_list[[i]] <- tempfile(fileext = ".rds")
