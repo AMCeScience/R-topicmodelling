@@ -193,8 +193,8 @@ cleanMyText <- function(original_text, stem, gram) {
 addIDs <- function(corpus, metadata) {
   for (i in 1:length(corpus$content)) {
     corpus$content[[i]]$meta$id <- i
-    corpus$content[[i]]$meta$pid <- metadata[i,1]
-    corpus$content[[i]]$meta$reviewid <- metadata[i,2]
+    # corpus$content[[i]]$meta$pid <- metadata[i,1]
+    # corpus$content[[i]]$meta$reviewid <- metadata[i,2]
   }
 
   return(corpus)
