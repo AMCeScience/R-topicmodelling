@@ -73,7 +73,7 @@ trainForest <- function(training) {
                        summaryFunction = twoClassSummary,
                        verboseIter = TRUE)
 
-  mtry <- getMtry(length(training[1,]) - 1)
+  mtry <- getMtry(seq(1, length(training[1,]) - 1, 10))
 
   tunegrid <- expand.grid(.mtry = mtry)
 
