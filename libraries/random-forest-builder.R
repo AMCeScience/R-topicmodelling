@@ -73,7 +73,7 @@ trainForest <- function(training) {
                        summaryFunction = twoClassSummary,
                        verboseIter = TRUE)
 
-  mtry <- getMtry(seq(1, length(training[1,]) - 1, 10))
+  mtry <- getMtry(length(training[1,]) - 1)
 
   tunegrid <- expand.grid(.mtry = mtry)
 
@@ -177,16 +177,16 @@ formatInput <- function(input_matrix, includes) {
 }
 
 getMtry <- function(set_num) {
-  if (set_num < 50) {
-    mtry <- seq(1, set_num, 1)
-  } else {
+  # if (set_num < 50) {
+  #   mtry <- seq(1, set_num, 1)
+  # } else {
     mtry <- seq(10, set_num, 10)
 
     # Append set_num if not divisible by 10
     if (set_num %% 10 != 0) {
       mtry <- c(mtry, set_num)
     }
-  }
+  # }
 
   return(mtry)
 }
