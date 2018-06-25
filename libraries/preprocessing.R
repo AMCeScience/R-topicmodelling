@@ -108,7 +108,7 @@ stemText <- function(original_corpus) {
 # Uses tm corpus as input
 removeStopWords <- function(original_corpus, extra) {
   # Remove stopwords
-  result <- tm_map(original_corpus, content_transformer(removeWords), c(stopwords("SMART"), extra))
+  result <- tm_map(original_corpus, content_transformer(removeWords), c(stopwords(source = "smart"), extra))
 
   result <- tm_map(result, content_transformer(stripWhitespace))
   result <- tm_map(result, content_transformer(trimWhitespace))
@@ -183,8 +183,8 @@ cleanMyText <- function(original_text, stem, gram) {
   }
 
   # If any weirdly long words are left, remove them
-  # print("Cleaning: remove long words.")
-  # result <- removeOverlyLongWords(result)
+  print("Cleaning: remove long words.")
+  result <- removeOverlyLongWords(result)
 
   # Return as corpus
   return(result)
@@ -229,14 +229,39 @@ runPreprocessing <- function(csv_location, stem = TRUE, gram = TRUE) {
   return(clean_corpus)
 }
 
-setupPreprocessing <- function(project_name, csv_name, includes = c()) {
+preprocessFolder <- function(project_name, csv_folder, includes) {
+  suppressMessages(library(tm))
+
+  data_folder <- getProjectFolder(project_name)
+  
+  files = list.files(path = csv_folder)
+
+  count = 0
+
+  for (csv_location in files) {
+    corpus_filename <- paste("clean_corpus_", count, sep = "")
+
+    csv_location = paste(csv_folder, csv_location, sep = "/")
+    
+    documents <- readCSV(csv_location)
+
+    corpus <- VCorpus(VectorSource(documents))
+
+    corpus <- appendIncludes(corpus, includes)
+
+    corpus_location <- paste(data_folder, "/corpora/", corpus_filename, ".rds", sep = "")
+
+    print(paste("Writing corpus to RDS: ", corpus_location))
+    saveRDS(corpus, corpus_location)
+
+    count = count + 1
+  }
+}
+
+setupPreprocessing <- function(project_name, csv_name, includes = c(), corpus_filename = "clean_corpus_1") {
   data_folder <- getProjectFolder(project_name)
 
   csv_location <- paste(corpus_folder, "/", csv_name, ".csv", sep = "")
-
-  corpus_filename <- "clean_corpus_1"
-
-  # run_version <- getLastVersion("clean_corpus", data_folder)
 
   # DIRECTORY TESTING
   if (!file.exists(csv_location)) {
@@ -247,9 +272,9 @@ setupPreprocessing <- function(project_name, csv_name, includes = c()) {
     stop("Data directory does not exist")
   }
 
-  if (dir.exists(data_folder)) {
-    corpus_filename <- paste("clean_corpus_", getLastVersion("clean_corpus", data_folder), sep = "")
-  }
+  # if (dir.exists(data_folder)) {
+  #   corpus_filename <- paste("clean_corpus_", getLastVersion("clean_corpus", data_folder), sep = "")
+  # }
 
   if (clean_force && dir.exists(data_folder)) {
     print("Writing directory already exists")

@@ -29,13 +29,10 @@ file_version <- getLastVersion("clean_corpus", project_location)
 # Load 'includes' variable
 source(paste(project_location, selection_file, sep = "/"))
 
-# Pre-process the corpus
-corpus <- setupPreprocessing(project_name, csv_name, includes)
-
-if (workflow_run_to == "cleaning") {
-  stop()
-}
+preprocessFolder(project_name, "originals/datasets", includes)
 
 # FITTING ----------------------------------------------
 
 source("lm-fit.R")
+
+start(project_name)

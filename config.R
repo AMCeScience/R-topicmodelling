@@ -43,12 +43,12 @@ rfa_store <- TRUE
 # GENERIC
 corpus_folder <- "originals"
 data_folder <- "data"
-parallel_cores <- 2
+parallel_cores <- 1
 parallel_silent <- FALSE
 workflow_run_to <- "fit"
 
 if (fit_parallel || rf_parallel) {
   suppressMessages(library(parallel))
 
-  parallel_cores <- detectCores()
+  # parallel_cores <- detectCores()
 }
