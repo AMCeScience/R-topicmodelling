@@ -31,6 +31,7 @@ for (file in files) {
 
 confusion_matrix <- function() {
   all_fdrs <- list()
+  all_fors <- list()
 
   count <- 1
 
@@ -39,15 +40,19 @@ confusion_matrix <- function() {
 
     TP <- this_cm$table[1,1]
     FP <- this_cm$table[1,2]
+    FN <- this_cm$table[2,1]
+    TN <- this_cm$table[2,2]
 
     FDR <- FP / (TP + FP)
+    FOR <- FN / (FN + TN)
 
     all_fdrs[count] <- FDR
+    all_fors[count] <- FOR
 
     count <- count + 1
   }
 
-  py_save_object(all_fdrs, paste(store_folder, "fdrs.pickle", sep = "/"))
+  py_save_object(list('fdrs' = all_fdrs, 'fors' = all_fors), paste(store_folder, "fdrs.pickle", sep = "/"))
 }
 
 # ######################### PLOT ROCS #########################
@@ -56,19 +61,21 @@ roc_data <- function() {
   all_words <- data.frame(ZplaceholderZ = c(1))
   tprs <- list()
   fprs <- list()
+  aucs <- list()
 
   count <- 1
 
   for (k in file_loop) {
     this_roc <- readRDS(paste(project_location, "/results/roc_", k, ".rds", sep = ""))
-
+    
     tprs[count] <- list(rev(this_roc$sensitivities))
     fprs[count] <- list(1 - rev(this_roc$specificities))
+    aucs[count] <- as.numeric(this_roc$auc)
     
     count <- count + 1
   }
 
-  py_save_object(list('tpr' = tprs, 'fpr' = fprs), paste(store_folder, "roc.pickle", sep = "/"))
+  py_save_object(list('tpr' = tprs, 'fpr' = fprs, 'aucs' = aucs), paste(store_folder, "roc.pickle", sep = "/"))
 }
 
 # # ######################### GET PARAMETER CHOSEN FOR EACH DATASET #########################
@@ -119,32 +126,32 @@ corpus_counts <- function() {
     break
   }
 
-  # dtm_list <- list()
+  dtm_list <- list()
 
-  # count <- 1
+  count <- 1
 
-  # for (k in file_loop) {
-  #   corpus <- readRDS(paste(project_location, "/corpora/clean_corpus_", k, ".rds", sep = ""))
-  #   dtm <- DocumentTermMatrix(corpus)
+  for (k in file_loop) {
+    corpus <- readRDS(paste(project_location, "/corpora/clean_corpus_", k, ".rds", sep = ""))
+    dtm <- DocumentTermMatrix(corpus)
 
-  #   nbd_docs <- !bd_docs
+    nbd_docs <- !bd_docs
 
-  #   dtm2list <- apply(dtm[c(nbd_docs),], 1, function(x) {
-  #     paste(rep(names(x), x), collapse=" ")
-  #   })
+    dtm2list <- apply(dtm[c(nbd_docs),], 1, function(x) {
+      paste(rep(names(x), x), collapse=" ")
+    })
 
-  #   dtm_list[[count]] <- dtm2list
+    dtm_list[[count]] <- dtm2list
 
-  #   print(count)
+    print(count)
 
-  #   count <- count + 1
+    count <- count + 1
 
-  #   # if (count > 3) {
-  #   #   break
-  #   # }
-  # }
+    # if (count > 3) {
+    #   break
+    # }
+  }
 
-  # saveRDS(dtm_list, paste(store_folder, "nbd_dtm_lists.rds", sep = "/"))
+  saveRDS(dtm_list, paste(store_folder, "nbd_dtm_lists.rds", sep = "/"))
 
   dtm_list <- readRDS(paste(store_folder, "nbd_dtm_lists.rds", sep = "/"))
 
@@ -159,8 +166,8 @@ corpus_counts <- function() {
   saveRDS(bd_tfidf_sum, paste(store_folder, "bd_tfidf.rds", sep = "/"))
   saveRDS(nbd_tfidf_sum, paste(store_folder, "nbd_tfidf.rds", sep = "/"))
 
-  saveRDS(bd_counts, paste(store_folder, "bd_counts.rds", sep = "/"))
-  saveRDS(nbd_counts, paste(store_folder, "nbd_counts.rds", sep = "/"))
+  # saveRDS(bd_counts, paste(store_folder, "bd_counts.rds", sep = "/"))
+  # saveRDS(nbd_counts, paste(store_folder, "nbd_counts.rds", sep = "/"))
   print('stored')
 }
 
@@ -191,8 +198,8 @@ make_wordcloud <- function() {
   dev.off()
 }
 
-# confusion_matrix()
-# roc_data()
+confusion_matrix()
+roc_data()
 # coefficient_data()
 # corpus_counts()
-make_wordcloud()
+# make_wordcloud()

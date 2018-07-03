@@ -7,14 +7,14 @@
 source("cli-input.R")
 source("libraries/utils.R")
 
-if (length(args) < 3) {
-  stop("Corpus name or CSV name not provided")
-}
+# if (length(args) < 3) {
+#   stop("Corpus name or CSV name not provided")
+# }
 
 # CLEANING ----------------------------------------------
 
 project_name <- args[2]
-csv_name <- args[3]
+# csv_name <- args[3]
 
 # OVERWRITE CONFIG DEFAULTS
 clean_force <- FALSE
@@ -29,7 +29,7 @@ file_version <- getLastVersion("clean_corpus", project_location)
 # Load 'includes' variable
 source(paste(project_location, selection_file, sep = "/"))
 
-preprocessFolder(project_name, "originals/datasets", includes)
+# preprocessFolder(project_name, "originals/datasets/all_years", includes)
 
 # FITTING ----------------------------------------------
 

@@ -26,7 +26,7 @@ for (loc in locations) {
   # Load 'includes' variable
   source(paste(project_location, selection_file, sep = "/"))
 
-  # preprocessFolder(project_name, paste("originals/datasets/", loc, sep = ""), includes)
+  preprocessFolder(project_name, paste("originals/datasets/", loc, sep = ""), includes)
 
   # FITTING ----------------------------------------------
 

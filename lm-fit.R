@@ -4,7 +4,7 @@ suppressMessages(library(pROC))
 suppressMessages(library(caret))
 suppressMessages(library(methods))
 require(doMC)
-registerDoMC(cores = 1)
+registerDoMC(cores = 4)
 
 fitCorpus <- function(dtm_matrix, y, i) {
   train_folds <- createFolds(y = y, k = 10, list = TRUE)
@@ -55,7 +55,7 @@ start <- function(project_name) {
 
     dtm <- DocumentTermMatrix(corpus)
 
-    minimized_dtm <- removeSparseTerms(dtm, sparse = 0.99)
+    # minimized_dtm <- removeSparseTerms(dtm, sparse = 0.99)
 
     dtm_matrix <- as.matrix(minimized_dtm)
 
