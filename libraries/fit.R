@@ -105,7 +105,7 @@ TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, bur
 
   usedTerms <- colnames(phi)
 
-  tokensPerDoc <- rowSums(as.matrix(dtm))
+  # tokensPerDoc <- rowSums(as.matrix(dtm))
 
   print("TmLDASimulation tokensPerDoc done.")
 
@@ -119,7 +119,7 @@ TmLDASimulation <- function(dtm, project_name, file_version, k, alpha, beta, bur
     LDAData = LDAData,
     usedTerms = usedTerms,
     dtm = dtm,
-    tokensPerDoc = tokensPerDoc,
+    #tokensPerDoc = tokensPerDoc,
     posterior = list(phi = phi, theta = theta),
     #termFrequency = termFrequency,
     control = control,

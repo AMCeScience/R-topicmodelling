@@ -73,7 +73,8 @@ trainForest <- function(training) {
   nmin <- sum(training$Class == "include")
 
   # Create control variable, set to cross validate
-  ctrl <- trainControl(method = "cv",
+  # ctrl <- trainControl(method = "cv",
+  ctrl <- trainControl(method = "none",
                        classProbs = TRUE,
                        summaryFunction = twoClassSummary,
                        verboseIter = TRUE)
@@ -83,9 +84,9 @@ trainForest <- function(training) {
   tunegrid <- expand.grid(.mtry = mtry)
 
   # Parallel RFs
-  if (rf_parallel) {
-    registerDoMC(cores = parallel_cores)
-  }
+  # if (rf_parallel) {
+  #   registerDoMC(cores = parallel_cores)
+  # }
 
   rf <- train(Class ~ ., data = training,
               method = "rf",
@@ -179,7 +180,9 @@ formatInput <- function(thetas, includes) {
 }
 
 getMtry <- function(set_num) {
-  mtry <- seq(1, sqrt(set_num) * 2, 10)
+  # mtry <- seq(1, sqrt(set_num) * 2, 10)
+  # mtry <- c(55, 60, 65, 70, 75)
+  mtry <- c(75)
 
   # Append set_num if not divisible by 100
   # if (set_num %% 10 != 0) {

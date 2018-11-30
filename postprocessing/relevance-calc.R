@@ -15,7 +15,7 @@ relevanceCalculation <- function(data, numberOfTerms = 30, raw = FALSE, reorder 
   phi = data$posterior$phi[][, colnames(data$posterior$phi) %in% colnames(sparseMatrix)]
 
   termSaliencyData <- salientTerms(phi = phi, theta = data$posterior$theta,
-                                   vocab = usedTerms, doc.length = data$tokensPerDoc,
+                                   vocab = usedTerms, doc.length = data$dtm$nrow,
                                    R = numberOfTerms, raw = raw, reorder.topics = reorder)
 
   return(termSaliencyData)

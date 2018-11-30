@@ -240,21 +240,19 @@ saliency <- function(ids, numberOfTerms = 10) {
   }
 }
 
-impressionsToExcel <- function(ids) {
+impressionsToExcel <- function(data_in) {
  # library(xlsx)
 
-  for (id in ids) {
-    data <- calcImpression(id)
+  data <- calcImpression(data_in)
 
-    filename <- gsub("XX", id, paste(folder, "XXrelevancies.csv", sep = "/"))
+  filename <- gsub("XX", id, paste(folder, "XXrelevancies.csv", sep = "/"))
 
-    if (file.exists(filename)) {
-      file.remove(filename)
-    }
-
-    #write.xlsx(data, file = filename, sheetName = paste("sheet", id), append = TRUE)
-    write.table(data, file = filename, row.names = FALSE)
+  if (file.exists(filename)) {
+    file.remove(filename)
   }
+
+  #write.xlsx(data, file = filename, sheetName = paste("sheet", id), append = TRUE)
+  write.table(data, file = filename, row.names = FALSE)
 }
 
 calcImpression <- function(id) {

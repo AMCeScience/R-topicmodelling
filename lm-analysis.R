@@ -1,55 +1,59 @@
+#!/usr/bin/env Rscript
+
 library("tm")
 library("stats")
 
 # project_location <- c("contrast-all", "contrast-2011", "contrast-2014",
 #                       "contrast-2015", "contrast-2016")
-project_location <- c("contrast-all", "contrast-2011", "contrast-2014", "contrast-2015", "contrast-2016")
+# project_location <- c("contrast-all", "contrast-2011", "contrast-2014", "contrast-2015", "contrast-2016")
+# project_location <- c("contrast-all")
+project_location <- c("new_data/results")
 folder <- "data/lm-analysis"
 
-fold_cutoff <- 6
+fold_cutoff <- 8
 
 # ######################### CORPUS TOKEN COUNTS #########################
 
-token_counts <- vector("list")
-bd_token_counts <- vector("list")
-nbd_token_counts <- vector("list")
+# token_counts <- vector("list")
+# bd_token_counts <- vector("list")
+# nbd_token_counts <- vector("list")
 
-for (location in project_location) {
-  corpus <- readRDS(paste("data/", location, "/clean_corpus_1.rds", sep = ""))
+# for (location in project_location) {
+#   corpus <- readRDS(paste("data/", location, "/clean_corpus_1.rds", sep = ""))
 
-  this_count <- 0
-  this_bd_count <- 0
-  this_nbd_count <- 0
+#   this_count <- 0
+#   this_bd_count <- 0
+#   this_nbd_count <- 0
 
-  for (i in 1:length(corpus)) {
-    tokens <- strsplit(corpus[[i]]$content, " ")
+#   for (i in 1:length(corpus)) {
+#     tokens <- strsplit(corpus[[i]]$content, " ")
 
-    this_count <- this_count + length(tokens[[1]])
+#     this_count <- this_count + length(tokens[[1]])
 
-    if (corpus[[i]]$meta$included == TRUE) {
-      this_bd_count <- this_bd_count + length(tokens[[1]])
-    } else {
-      this_nbd_count <- this_nbd_count + length(tokens[[1]])
-    }
-  }
+#     if (corpus[[i]]$meta$included == TRUE) {
+#       this_bd_count <- this_bd_count + length(tokens[[1]])
+#     } else {
+#       this_nbd_count <- this_nbd_count + length(tokens[[1]])
+#     }
+#   }
 
-  token_counts[[location]] <- this_count
-  bd_token_counts[[location]] <- this_bd_count
-  nbd_token_counts[[location]] <- this_nbd_count
-}
+#   token_counts[[location]] <- this_count
+#   bd_token_counts[[location]] <- this_bd_count
+#   nbd_token_counts[[location]] <- this_nbd_count
+# }
 
-rm(this_count, this_bd_count, this_nbd_count, tokens, corpus, location)
+# rm(this_count, this_bd_count, this_nbd_count, tokens, corpus, location)
 
 # ######################### PLOT ROCS, GET AUCS #########################
 
-i <- seq(1, 10, 1)
+i <- seq(0, 99, 1)
 aucs <- list()
 
 for (location in project_location) {
   all_words <- data.frame(ZplaceholderZ = c(1))
   aucs[[location]] <- list()
 
-  png(paste(folder, "/roc_plot_", location, ".png", sep = ""))
+  png(paste(folder, "/roc_plot.png", sep = ""))
 
   for (k in i) {
     this_words <- readRDS(paste("data/", location, "/words_", k, ".rds", sep = ""))
@@ -64,9 +68,9 @@ for (location in project_location) {
 
     this_roc <- readRDS(paste("data/", location, "/roc_", k, ".rds", sep = ""))
 
-    aucs[[location]][[k]] <- this_roc$auc * 1
+    aucs[[location]][[k + 1]] <- this_roc$auc * 1
 
-    if (k < 2) {
+    if (k < 1) {
       plot(this_roc)
     } else {
       lines(this_roc)
@@ -79,9 +83,11 @@ for (location in project_location) {
   all_words <- all_words[order(all_words, decreasing = TRUE)]
 
   saveRDS(all_words, paste("data/", location, "/all_words.rds", sep = ""))
+
+  write.csv(all_words, paste(folder, "contrast_sets_combined.csv", sep = "/"), row.names = project_location)
 }
 
-rm(k, this_words, this_roc, all_words, location)
+rm(k, this_words, this_roc, location)
 
 # ######################### GET MEAN AND SD FOR AUCS #########################
 
@@ -105,7 +111,7 @@ plot(1:length(aucs), auc_plot$mean, pch = 19, xlab = "", ylab = "", xaxt = "n", 
 arrows(1:length(aucs), auc_plot$mean + auc_plot$sd, 1:length(aucs), auc_plot$mean - auc_plot$sd,
        code = 3, angle = 90, length = 0.05)
 
-axis(side = 1, at = 1:length(aucs), labels = c("All", "2011-2013", "2014", "2015", "2016"))
+# axis(side = 1, at = 1:length(aucs), labels = c("All", "2011-2013", "2014", "2015", "2016"))
 
 dev.off()
 
@@ -113,111 +119,112 @@ rm(items)
 
 # ######################### GET PARAMETER CHOSEN FOR EACH DATASET #########################
 
-all_words <- data.frame(ZplaceholderZ = rep(1, length(project_location)))
-rownames(all_words) <- project_location
+# all_words <- data.frame(ZplaceholderZ = rep(1, length(project_location)))
+# rownames(all_words) <- project_location
 
-for (location in project_location) {
-  words <- readRDS(paste("data/", location, "/all_words.rds", sep = ""))
+# for (location in project_location) {
+#   words <- readRDS(paste("data/", location, "/all_words.rds", sep = ""))
 
-  for (word in names(words)) {
-    if (is.null(all_words[[word]])) {
-      all_words[[word]] <- rep(0, length(project_location))
-    }
+#   for (word in names(words)) {
+#     if (is.null(all_words[[word]])) {
+#       all_words[[word]] <- rep(0, length(project_location))
+#     }
 
-    all_words[location, word] <- words[[word]]
-  }
-}
+#     all_words[location, word] <- words[[word]]
+#   }
+# }
 
-# Write to CSV
-all_words <- all_words[ , !(names(all_words) %in% c("ZplaceholderZ"))]
-all_words <- all_words[,apply(all_words, 2, function(x) any(x > fold_cutoff))]
-write.csv(all_words, paste(folder, "contrast_sets_combined.csv", sep = "/"), row.names = project_location)
+# # Write to CSV
+# all_words <- all_words[ , !(names(all_words) %in% c("ZplaceholderZ"))]
+# all_words <- all_words[,apply(all_words, 2, function(x) any(x > fold_cutoff))]
 
-rm(words, word, location)
+# write.csv(all_words, paste(folder, "contrast_sets_combined.csv", sep = "/"), row.names = project_location)
+
+# rm(words, word, location)
 
 # ######################### GET WORD COUNTS FOR EACH DATASET #########################
 
-all_counts <- data.frame(matrix(ncol = length(all_words), nrow = length(project_location)))
-colnames(all_counts) <- colnames(all_words)
-rownames(all_counts) <- project_location
-bd_counts <- all_counts
-nbd_counts <- all_counts
-adjusted_counts <- data.frame(matrix(ncol = length(all_words), nrow = length(project_location)))
-colnames(adjusted_counts) <- colnames(all_words)
-rownames(adjusted_counts) <- project_location
-adjusted_bd_counts <- adjusted_counts
-adjusted_nbd_counts <- adjusted_counts
+# all_counts <- data.frame(matrix(ncol = length(all_words), nrow = length(project_location)))
+# colnames(all_counts) <- colnames(all_words)
+# rownames(all_counts) <- project_location
+# bd_counts <- all_counts
+# nbd_counts <- all_counts
+# adjusted_counts <- data.frame(matrix(ncol = length(all_words), nrow = length(project_location)))
+# colnames(adjusted_counts) <- colnames(all_words)
+# rownames(adjusted_counts) <- project_location
+# adjusted_bd_counts <- adjusted_counts
+# adjusted_nbd_counts <- adjusted_counts
 
-getIncluded <- function(doc) {
-  return(doc$meta$included)
-}
+# getIncluded <- function(doc) {
+#   return(doc$meta$included)
+# }
 
-for (location in project_location) {
-  corpus <- readRDS(paste("data/", location, "/clean_corpus_1.rds", sep = ""))
-  dtm <- DocumentTermMatrix(corpus)
+# for (location in project_location) {
+#   corpus <- readRDS(paste("data/", location, "/clean_corpus_1.rds", sep = ""))
+#   dtm <- DocumentTermMatrix(corpus)
 
-  bd_docs <- unlist(lapply(corpus, getIncluded))
-  nbd_docs <- !bd_docs
+#   bd_docs <- unlist(lapply(corpus, getIncluded))
+#   nbd_docs <- !bd_docs
 
-  for (word in colnames(all_words)) {
-    all_counts[location, word] <- sum(dtm[, intersect(colnames(dtm), word)])
-    bd_counts[location, word] <- sum(dtm[c(bd_docs), intersect(colnames(dtm), word)])
-    nbd_counts[location, word] <- sum(dtm[c(nbd_docs), intersect(colnames(dtm), word)])
-  }
-}
+#   for (word in colnames(all_words)) {
+#     all_counts[location, word] <- sum(dtm[, intersect(colnames(dtm), word)])
+#     bd_counts[location, word] <- sum(dtm[c(bd_docs), intersect(colnames(dtm), word)])
+#     nbd_counts[location, word] <- sum(dtm[c(nbd_docs), intersect(colnames(dtm), word)])
+#   }
+# }
 
-adjusted_counts <- all_counts / unlist(token_counts)
-adjusted_bd_counts <- bd_counts / unlist(bd_token_counts)
-adjusted_nbd_counts <- nbd_counts / unlist(nbd_token_counts)
+# adjusted_counts <- all_counts / unlist(token_counts)
+# adjusted_bd_counts <- bd_counts / unlist(bd_token_counts)
+# adjusted_nbd_counts <- nbd_counts / unlist(nbd_token_counts)
 
-#bd_col_counts <- colSums(bd_counts)
-#nbd_col_counts <- colSums(nbd_counts)
-bd_col_counts <- bd_counts["contrast-all",]
-nbd_col_counts <- nbd_counts["contrast-all",]
-adjusted_bd_col_counts <- adjusted_bd_counts["contrast-all",]
-adjusted_nbd_col_counts <- adjusted_nbd_counts["contrast-all",]
+# #bd_col_counts <- colSums(bd_counts)
+# #nbd_col_counts <- colSums(nbd_counts)
+# bd_col_counts <- bd_counts["contrast-all",]
+# nbd_col_counts <- nbd_counts["contrast-all",]
+# adjusted_bd_col_counts <- adjusted_bd_counts["contrast-all",]
+# adjusted_nbd_col_counts <- adjusted_nbd_counts["contrast-all",]
 
-rm(bd_docs, nbd_docs, word, dtm, corpus, location)
+# rm(bd_docs, nbd_docs, word, dtm, corpus, location)
 
 # ######################### PLOT WORD COUNTS OVER TIME #########################
 
 # Scale counts for plotting
-scaleDf <- function(df) {
-  scaled_df <- scale(df, center = FALSE, scale = TRUE)
+# scaleDf <- function(df) {
+#   scaled_df <- scale(df, center = FALSE, scale = TRUE)
 
-  scaled_df[is.na(scaled_df)] <- 0
+#   scaled_df[is.na(scaled_df)] <- 0
 
-  return(scaled_df)
-}
+#   return(scaled_df)
+# }
 
-relevant_counts <- all_counts[project_location[2:5],]
-relevant_adjusted_counts <- adjusted_counts[project_location[2:5],]
-relevant_adjusted_bd_counts <- adjusted_bd_counts[project_location[2:5],]
-relevant_adjusted_nbd_counts <- adjusted_nbd_counts[project_location[2:5],]
+# relevant_counts <- all_counts[project_location[2:5],]
+# relevant_adjusted_counts <- adjusted_counts[project_location[2:5],]
+# relevant_adjusted_bd_counts <- adjusted_bd_counts[project_location[2:5],]
+# relevant_adjusted_nbd_counts <- adjusted_nbd_counts[project_location[2:5],]
 
-scaled_counts <- scaleDf(relevant_counts)
-sac <- scaleDf(relevant_adjusted_counts)
-sabdc <- scaleDf(relevant_adjusted_bd_counts)
-sanbdc <- scaleDf(relevant_adjusted_nbd_counts)
+# scaled_counts <- scaleDf(relevant_counts)
+# sac <- scaleDf(relevant_adjusted_counts)
+# sabdc <- scaleDf(relevant_adjusted_bd_counts)
+# sanbdc <- scaleDf(relevant_adjusted_nbd_counts)
 
-x <- seq(1, length(scaled_counts[,1]))
+# x <- seq(1, length(scaled_counts[,1]))
 
-png(paste(folder, "wordcount_plot.png", sep = "/"))
+# png(paste(folder, "wordcount_plot.png", sep = "/"))
 
-min_y <- round(min(scaled_counts), digits = 2)
-max_y <- round(max(scaled_counts), digits = 2)
+# min_y <- round(min(scaled_counts), digits = 2)
+# max_y <- round(max(scaled_counts), digits = 2)
 
-plot(x, rep(0, length(x)), type = "n", ylim = c(min_y, max_y))
+# plot(x, rep(0, length(x)), type = "n", ylim = c(min_y, max_y))
 
-for (i in colnames(scaled_counts)) {
-  y <- scaled_counts[,i]
+# for (i in colnames(scaled_counts)) {
+#   y <- scaled_counts[,i]
 
-  lines(x, y)
-}
+#   lines(x, y)
+# }
 
-dev.off()
+# dev.off()
 
-rm(x, y, min_y, max_y, i)
+# rm(x, y, min_y, max_y, i)
 
 # ######################### SLOPE FUNCTIONS #########################
 
@@ -346,7 +353,17 @@ freqs_df$PROPORTIONAL[is.infinite(freqs_df$PROPORTIONAL)] <- 0
 
 png(paste(folder, "proportional_wordcloud.png", sep = "/"), width = 1200, height = 1200, res = 200)
 
-wordcloud(rownames(freqs_df), freqs_df$PROPORTIONAL, scale = c(5,0.25), max.words = Inf)
+cut_freqs <- freqs_df[freqs_df$PROPORTIONAL > 3.0,]
+
+wordcloud(rownames(cut_freqs), cut_freqs$PROPORTIONAL, scale = c(5,0.25))
+
+dev.off()
+
+png(paste(folder, "proportional_bargraph.png", sep = "/"))
+
+barplot(freqs_df$PROPORTIONAL[order(freqs_df$PROPORTIONAL, decreasing = TRUE)], ylab = "", xlab = "", ylim = c(0,40))
+title(xlab = "Words", cex.lab = 1.5, line = 1)
+title(ylab = "Relative occurrence difference", cex.lab = 1.5, line = 2.3)
 
 dev.off()
 
@@ -362,13 +379,14 @@ for (row in 2:(nrow(freqs_df) + 1)) {
   conditionalFormatting(wb, "Sheet1", cols = 4:5, rows = row, style = c("white", "#FFC7CE"), type = "colourScale")
 }
 
-saveWorkbook(wb, paste(folder, "BD_vs_NBD_frequencies.xlsx"), TRUE)
+saveWorkbook(wb, paste(folder, "BD_vs_NBD_frequencies.xlsx", sep = "/"), TRUE)
 
 rm(wb)
 
 # ######################### GET INTERESTING DOCUMENTS #########################
 
 library("nnet")
+library("glmnet")
 
 # AUCs for all year dataset
 this_auc <- unlist(aucs["contrast-all"])
@@ -398,28 +416,49 @@ complete <- complete[order(complete[,"prediction"], decreasing = TRUE),]
 
 write.xlsx(complete, paste(folder, "classifier_predictions.xlsx", sep = "/"))
 
-orig_docs <- read.csv("originals/contrast-all-articles.csv", header = FALSE, stringsAsFactors = FALSE)
+false_pos <- complete[complete[,"class"] == TRUE & complete[,"actual"] == FALSE,]
+false_neg <- complete[complete[,"class"] == FALSE & complete[,"actual"] == TRUE,]
+false_length <- length(false_neg[,1])
 
-num_docs <- length(complete[,1])
+pos_10 <- rownames(false_pos[1:10,])
+neg_10 <- rownames(false_neg[(false_length - 19):false_length,])
 
-include_certain <- t(lapply(row.names(complete[1:10,]), function(x) { return(orig_docs[x,1]) }))
-exclude_certain <- t(lapply(row.names(complete[(num_docs - 9):num_docs,]), function(x) { return(orig_docs[x,1]) }))
+orig_docs <- read.csv("originals/contrast-new/articles-all.csv", header = FALSE, stringsAsFactors = FALSE)
 
-write.xlsx(include_certain, paste(folder, "include_certain.xlsx", sep = "/"))
-write.xlsx(exclude_certain, paste(folder, "exclude_certain.xlsx", sep = "/"))
+corp_pos <- lapply(pos_10, function(x) { orig_docs[x,1] })
+corp_neg <- lapply(neg_10, function(x) { orig_docs[x,1] })
 
-only_include <- complete[complete[,"actual"] == TRUE,]
-only_exclude <- complete[complete[,"actual"] == FALSE,]
+write.xlsx(unlist(corp_pos), paste(folder, "false_positive_documents.xlsx", sep = "/"))
+write.xlsx(unlist(corp_neg), paste(folder, "false_negative_documents.xlsx", sep = "/"))
 
-num_include <- length(only_include[,1])
-num_exclude <- length(only_exclude[,1])
+true_5 <- rownames(complete[1:10,])
 
-# Get excludes from the top of the exclude list (highly likely that these are actually included)
-difficult_exclude <- t(lapply(row.names(only_exclude[1:10,]), function(x) { return(orig_docs[x,1]) }))
-# Get includes from the bottom of the include list (highly likely that these are actually excluded)
-difficult_include <- t(lapply(row.names(only_include[(num_include - 9):num_include,]), function(x) { return(orig_docs[x,1]) }))
+corp_true <- lapply(true_5, function(x) { orig_docs[x,1] })
 
-write.xlsx(difficult_exclude, paste(folder, "difficult_exclude.xlsx", sep = "/"))
-write.xlsx(difficult_include, paste(folder, "difficult_include.xlsx", sep = "/"))
+write.xlsx(unlist(corp_true), paste(folder, "true_positive_documents.xlsx", sep = "/"))
 
-rm(this_auc, best_model, fit, corpus, dtm, certainty, prediction, actual, i, num_docs, only_include, only_exclude, num_include, num_exclude)
+# orig_docs <- read.csv("originals/contrast-all-articles.csv", header = FALSE, stringsAsFactors = FALSE)
+#
+# num_docs <- length(complete[,1])
+#
+# include_certain <- t(lapply(row.names(complete[1:10,]), function(x) { return(orig_docs[x,1]) }))
+# exclude_certain <- t(lapply(row.names(complete[(num_docs - 9):num_docs,]), function(x) { return(orig_docs[x,1]) }))
+#
+# write.xlsx(include_certain, paste(folder, "include_certain.xlsx", sep = "/"))
+# write.xlsx(exclude_certain, paste(folder, "exclude_certain.xlsx", sep = "/"))
+
+# only_include <- complete[complete[,"actual"] == TRUE,]
+# only_exclude <- complete[complete[,"actual"] == FALSE,]
+#
+# num_include <- length(only_include[,1])
+# num_exclude <- length(only_exclude[,1])
+#
+# # Get excludes from the top of the exclude list (highly likely that these are actually included)
+# difficult_exclude <- t(lapply(row.names(only_exclude[1:10,]), function(x) { return(orig_docs[x,1]) }))
+# # Get includes from the bottom of the include list (highly likely that these are actually excluded)
+# difficult_include <- t(lapply(row.names(only_include[(num_include - 9):num_include,]), function(x) { return(orig_docs[x,1]) }))
+#
+# write.xlsx(difficult_exclude, paste(folder, "difficult_exclude.xlsx", sep = "/"))
+# write.xlsx(difficult_include, paste(folder, "difficult_include.xlsx", sep = "/"))
+
+rm(this_auc, best_model, fit, corpus, dtm, certainty, prediction, actual, i)
